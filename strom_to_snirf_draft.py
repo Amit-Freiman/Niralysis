@@ -12,6 +12,10 @@ class Niralysis:
         self.snirf_fname = pathlib.Path(snirf_fname)
         if not self.snirf_fname.exists():
             raise ValueError("snirf file does not exsist.") 
+        
+        if not str(self.snirf_fname).endswith('.snirf'):
+            raise ValueError("Noe a snirf file.") 
+
             
         self.read_snirf()
         self.snirf_dtc_loc = self.snirf_file.nirs[0].probe.detectorPos3D[:,:]
@@ -38,15 +42,24 @@ class Niralysis:
         return self.storm_data
             
 
-
     def is_same_dim(self):
         num_snirf_src_loc = np.shape(self.snirf_src_loc)[0]
         num_snirf_dtc_loc = np.shape(self.snirf_dtc_loc)[0]
         num_storm_dtc = 23
         num_storm_src = 16
-
         if num_snirf_src_loc !=num_storm_src or num_snirf_dtc_loc !=num_storm_dtc:
             raise ValueError("File does not exsist.")
+        
+
+    ### validation on storm
+
+    
+
+
+
+
+
+
             
 
 
