@@ -7,7 +7,7 @@ from strom_to_snirf_draft import *
 "creating changes to merge"
 def test_valid_input():
     """Testing if the file name as a path is valid """
-    fname = pathlib.Path(__file__) # (to ask Zvi what is the __file__ name)
+    fname = pathlib.Path(__file__) 
     q = Niralysis(fname)
     assert fname == q.snirf_fname
 
