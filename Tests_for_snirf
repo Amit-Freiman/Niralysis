@@ -1,6 +1,6 @@
 import pathlib
 import pytest
-import pandas 
+import pandas as pd
 
 from strom_to_snirf_draft import *
 
