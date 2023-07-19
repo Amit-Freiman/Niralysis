@@ -3,6 +3,7 @@ import pathlib
 from snirf import Snirf
 import numpy as np
 from typing import Union
+import re
 
 
 class Niralysis:
@@ -41,8 +42,8 @@ class Niralysis:
         if self.storm_fname is None:
             raise ValueError("No storm file set. Use 'set_storm_file' to provide a file path.")
         
-        self.storm_file = pd.read_csv(self.storm_fname)
-        self.storm_data = pd.DataFrame(self.storm_file)
+        self.storm_data = pd.read_csv(self.storm_fname,delim_whitespace=True, index_col=0, header=None)
+        self.storm_data.index.name = None
         return self.storm_data
     
 
@@ -50,11 +51,18 @@ class Niralysis:
 
     def storm_prob(self):
         storm_data = self.read_storm_to_DF()
-        storm_src = storm_data.loc
+        storm_src = storm_data[storm_data.index.astype(str).str.contains(r'^s\d+$')]
+        storm_dtc = storm_data[storm_data.index.astype(str).str.contains(r'^d\d+$')]
+        return storm_src, storm_dtc
+    
 
-
-
-            
+    def snirf_with_storm_prob(self):
+        snirf_file_copy = self.snirf_file.copy()
+        storm_src, storm_dtc = self.storm_prob()
+        snirf_file_copy.nirs[0].probe.sourcePos3D[:, :] = storm_src[:, :]
+        snirf_file_copy.nirs[0].probe.detectorPos3D[:, :] = storm_dtc[:, :]
+        return snirf_file_copy
+       
 
     def is_same_dim(self):
         num_snirf_src_loc = np.shape(self.snirf_src_loc)[0]
@@ -63,6 +71,9 @@ class Niralysis:
         num_storm_src = 16
         if num_snirf_src_loc !=num_storm_src or num_snirf_dtc_loc !=num_storm_dtc:
             raise ValueError("File does not exsist.")
+        
+
+
         
 
 
