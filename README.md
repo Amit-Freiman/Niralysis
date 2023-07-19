@@ -5,7 +5,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/repo_name">
+  <a href="https://github.com/Amit-Freiman/Niralysis">
     <img src="img/logo.png" alt="Logo" width="200" height="200">
   </a>
 
