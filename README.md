@@ -1,12 +1,6 @@
 
 <a name="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
-
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
 <br />
@@ -83,7 +77,12 @@ ADD MAJOR LIBRARIES/FRAMEWORKS (check option to drop whole section)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- PROJECT SHIELDS -->
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
 <!-- GETTING STARTED -->
 ## Getting Started
