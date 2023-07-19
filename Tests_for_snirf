@@ -4,7 +4,7 @@ import pandas as pd
 
 from strom_to_snirf_draft import *
 
-
+"creating changes to merge"
 def test_valid_input():
     """Testing if the file name as a path is valid """
     fname = pathlib.Path(__file__) # (to ask Zvi what is the __file__ name)
