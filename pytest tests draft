@@ -1,5 +1,6 @@
 import pathlib
 import pytest
+import pandas 
 
 from strom_to_snirf_draft import *
 
@@ -18,7 +19,7 @@ def test_str_input():
 
 
 def test_not_snirf_input():
-        """Testing if the file type is snirf """
+    """Testing if the file type is snirf """
     fname = pathlib.Path('wrongfileformat.txt')
     with pytest.raises(ValueError):
         Niralysis(fname)
