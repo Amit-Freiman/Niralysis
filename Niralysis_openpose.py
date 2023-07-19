@@ -37,7 +37,7 @@ class Niralysis:
         column_names = self.data.columns
         # Find the key points in the column headers
 
-        columns_to_include = ["frame","person"]
+        columns_to_include = []
         for key_point in key_points:
             key_point_names = ["KP_" + str(key_point) + "_x", "KP_" + str(key_point) + "_y", "KP_" + str(key_point) + "_confidence"]
             for header in key_point_names: 
