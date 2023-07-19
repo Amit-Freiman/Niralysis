@@ -5,7 +5,9 @@ def calculate_pairwise_distance(data):
     keypoints = [col for col in data.columns if col.endswith('_x')]
     num_keypoints = len(keypoints)
     num_frames = len(data)
-    distance_data = pd.DataFrame(columns=pd.MultiIndex.from_product([keypoints, keypoints]), index=range(num_frames))
+    column_names = [f'{keypoints[i].replace("_x", "")}_{keypoints[j].replace("_x", "")}' for i in range(num_keypoints) for j in range(i+1, num_keypoints)]
+
+    distance_data = pd.DataFrame(columns=column_names, index=range(num_frames))
 
     for frame in range(num_frames):
         for i in range(num_keypoints):
@@ -19,8 +21,8 @@ def calculate_pairwise_distance(data):
                 else:
                     distance = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
-                distance_data.iloc[frame, (i * num_keypoints) + j] = distance
-                distance_data.iloc[frame, (j * num_keypoints) + i] = distance
+                col_name = f'{keypoints[i].replace("_x", "")}_{keypoints[j].replace("_x", "")}'
+                distance_data.at[frame, col_name] = distance
 
     return distance_data
 
