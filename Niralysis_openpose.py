@@ -1,9 +1,13 @@
+from jsonOrganizer import process_json_files
+
 
 class Niralysis:
     """Class for fNIR analysis of OpenPose"""
+
+    FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
+
     def __init__(self, json_file):
         self.data = self.get_csv(json_file)
-        self.frames_per_second = 30  # number of frames in a group for analysis of movement
 
     def get_csv(self, json_file):
         """Convert json to csv
@@ -12,7 +16,7 @@ class Niralysis:
         Returns:
             csv (list): list of lists
         """
-        pass
+        return process_json_files(json_file)
 
     def extract_key_point(self, key_points: list):
         """"""
