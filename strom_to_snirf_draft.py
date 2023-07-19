@@ -14,32 +14,46 @@ class Niralysis:
             raise ValueError("snirf file does not exsist.") 
         
         if not str(self.snirf_fname).endswith('.snirf'):
-            raise ValueError("Noe a snirf file.") 
-
-            
+            raise ValueError("Not a snirf file.") 
+        
         self.read_snirf()
         self.snirf_dtc_loc = self.snirf_file.nirs[0].probe.detectorPos3D[:,:]
         self.snirf_src_loc = self.snirf_file.nirs[0].probe.sourcePos3D[:,:]
 
-                            
+        self.storm_fname = None
+                  
+     ### Read files ###
         
     def read_snirf(self):
         self.snirf_file = Snirf(self.snirf_fname, 'r+')
 
 
-    def read_storm (self, storm_fname: Union[pathlib.Path, str]):
+    def set_storm_file(self, storm_fname: Union[pathlib.Path, str]):
         self.storm_fname = pathlib.Path(storm_fname)
         if not self.storm_fname.exists():
             raise ValueError("storm file not found!")
     
     
-    def read_storm_to_DF(self)-> pd.DataFrame:
+    def read_storm_to_DF(self):
         """Reads the txt file located in self.data_fname, to
         the attribute self.data.
         """
+        if self.storm_fname is None:
+            raise ValueError("No storm file set. Use 'set_storm_file' to provide a file path.")
+        
         self.storm_file = pd.read_csv(self.storm_fname)
         self.storm_data = pd.DataFrame(self.storm_file)
         return self.storm_data
+    
+
+    ### Processing STORM file ###
+
+    def storm_prob(self):
+        storm_data = self.read_storm_to_DF()
+        storm_src = storm_data.loc
+
+
+
             
 
     def is_same_dim(self):
@@ -51,7 +65,6 @@ class Niralysis:
             raise ValueError("File does not exsist.")
         
 
-    ### validation on storm
 
     
 
