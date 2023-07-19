@@ -7,24 +7,29 @@ class Niralysis:
 
     FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
 
-    def __init__(self, json_file):
-        self.data = self.get_csv(json_file)
+    def __init__(self, fname: str):
+        """
+        Initialize the class
+        Args:
+            fname (str): path to .snirf file
+        """
+        # Add Nina and Naama's init code here
 
-    def get_csv(self, json_file):
+    def get_csv(self, json_folder):
         """Convert json to csv
         Args:
-            json_file (str): path to json file
+            json_folder (str): path to folder cotaining all json files of the recording
         Returns:
-            csv (list): list of lists
+            daqta (pd.DataFrame): data frame of the json file combined
         """
-        return process_json_files(json_file)
+        return process_json_files(json_folder)
 
     def extract_key_point(self, key_points: list) -> pd.DataFrame:
-        """Extract the data of the key points from the csv file, according to the key points given.
+        """Extract the data from the data frame, according to the key points given.
         Args:
             key_points (list): list of key points to extract
         Returns:
-            filtered_key_point_data (pd.DataFrame): filtered key point data
+            filtered_key_point_data (pd.DataFrame): filtered data frame containing only the key points given
         """
         # check if key points are valid
         self.check_key_point_input()
@@ -69,13 +74,14 @@ class Niralysis:
     def generate_open_pose(self, path_to_open_pose_output_folder: str, beginning_of_recording: list, key_points_to_extract: list):
         """Generates attribute file.motionlabels (Timestamps for certain motion labels from video)
         Args:
-            path_to_open_pose_output_folder (str): path to open pose output folder
+            path_to_open_pose_output_folder (str): path to open pose output folder (folder containing all json files)
             beginning_of_recording (list): list of lists of the beginning of the recording
             key_points_to_extract (list): list of key points to extract
         Returns:
             open_pose_data (list): list of lists of open pose data
         """
-        extract_key_point = self.extract_key_point(key_points_to_extract)
+        self.data = self.get_csv(path_to_open_pose_output_folder)
+        df_extracted = self.extract_key_point(key_points_to_extract)
         self.filter_confidence()
 
 
