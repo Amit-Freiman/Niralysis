@@ -47,21 +47,28 @@ class Niralysis:
         filtered_key_point_data = self.data[columns_to_include]
         return filtered_key_point_data
 
-    def filter_confidence(self, confidence_threshold: float = 0.5):
+    def filter_confidence(filtered_key_point_data, confidence_threshold: float = 0.5):
         """Filter data based on confidence, if confidence is less than 0.5 in a specific key point and time frame, then
         the data in this time frame is set to 0.
         The columns are organized as follows: KP_1_x, KP_1_y, KP_1_confidence, KP_2_x, KP_2_y, KP_2_confidence, etc.
         Args:
             confidence_threshold (float): confidence threshold
         """
-        for column in self.data.columns:
+        # Add case if filtered_key_point_data is the same as self.data
+        for column in filtered_key_point_data.columns:
             if "confidence" in column:
-                for confidence_per_time_stamp in self.data[column]:
+                for confidence_per_time_stamp in filtered_key_point_data[column]:
                     # If confidence is less than TH, set the data in this time frame to 0 in both x and y coordinates
                     if confidence_per_time_stamp < confidence_threshold:
                         # set the values in the x and y rows in this key point to 0
-                        self.data[column - 2] = 0
-                        self.data[column - 1] = 0
+                        # find the index of the confidence column
+                        index_of_confidence_column = filtered_key_point_data.columns.get_loc(column)
+                        # find the index of the x and y columns in this key point
+                        index_of_x_column = index_of_confidence_column - 2
+                        index_of_y_column = index_of_confidence_column - 1
+                        # set the values in the x and y rows in this key point to 0
+                        filtered_key_point_data.iloc[index_of_x_column] = 0
+                        filtered_key_point_data.iloc[index_of_y_column] = 0
 
     def calculate_change_in_distance(data):
         distance_table = calculate_pairwise_distance(data)
