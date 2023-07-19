@@ -6,7 +6,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Amit-Freiman/Niralysis">
-    <img src="img/logo.png" alt="Logo" width="200" height="200">
+    <img src="img/logo.png" alt="Logo" width="350" height="350">
   </a>
 
 <h3 align="center">NIRalysis</h3>
