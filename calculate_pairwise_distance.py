@@ -30,4 +30,4 @@ def calculate_pairwise_distance(data):
 # Replace n with the total number of keypoints
 
 # Call the function to calculate the pairwise distance and get the resulting DataFrame
-distance_table = calculate_pairwise_distance(data)
+#distance_table = calculate_pairwise_distance(data)
