@@ -57,10 +57,10 @@ def process_json_files(folder_path):
         new_df = pd.concat([new_df, person_df], ignore_index=True)
     
     # Save the dataframe as a CSV file
-    main_output_folder = "keypoints"
-    this_folder_name = folder_path.split(os.sep)[-1] + '.csv'
-    output_file = os.path.join(main_output_folder, this_folder_name)
-    new_df.to_csv(output_file, index=False)
-    print(f"CSV file saved: {output_file}")
+    # main_output_folder = "keypoints"
+    # this_folder_name = folder_path.split(os.sep)[-1] + '.csv'
+    # output_file = os.path.join(main_output_folder, this_folder_name)
+    # new_df.to_csv(output_file, index=False)
+    # print(f"CSV file saved: {output_file}")
 
     return new_df
