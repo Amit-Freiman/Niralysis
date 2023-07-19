@@ -3,7 +3,8 @@ import pathlib
 import numpy as np
 from typing import Union
 import re
-import mne
+from snirf import Snirf
+from mne.io import read_raw_snirf
 
 
 class Niralysis:
@@ -26,8 +27,7 @@ class Niralysis:
      ### Read files ###
         
     def read_snirf(self):
-        self.snirf_file = mne.io.read_raw_snirf(self.snirf_fname)
-
+        self.snirf_file = Snirf(rf'{self.snirf_fname}', 'r+')
 
     def set_storm_file(self, storm_fname: str):
         self.storm_fname = pathlib.Path(storm_fname)
@@ -57,13 +57,14 @@ class Niralysis:
     
 
     def snirf_with_storm_prob(self):
-        snirf_file_copy = self.snirf_file.copy()
-        self.snirf_file.close()
         storm_src, storm_dtc = self.storm_prob()
-        snirf_file_copy.nirs[0].probe.sourcePos3D[:, :] = storm_src[:, :]
-        snirf_file_copy.nirs[0].probe.detectorPos3D[:, :] = storm_dtc[:, :]
-        snirf_file_copy.save()
-        return snirf_file_copy
+        old_source = self.snirf_file.nirs[0].probe.sourcePos3D[:, :]
+        old_detector =  self.snirf_file.nirs[0].probe.detectorPos3D[:, :] 
+        self.snirf_file.nirs[0].probe.sourcePos3D[:, :] = storm_src[:, :]
+        self.snirf_file.nirs[0].probe.detectorPos3D[:, :] = storm_dtc[:, :]
+        self.snirf_file.save()
+
+        return self.snirf_file, old_source, old_detector
        
 
     def is_same_dim(self):
@@ -80,14 +81,22 @@ file.read_snirf()
 file.set_storm_file('STORM_demo.txt')
 file.read_storm_to_DF()
 storm_src, storm_dtc = file.storm_prob()
+print("ni")
 print("Storm Source Positions:")
 print(storm_src)
 print("\nStorm Detector Positions:")
 print(storm_dtc)
 
-new = file.snirf_with_storm_prob()
+new_snirf_src = file.snirf_with_storm_prob()[0].nirs[0].probe.sourcePos3D[:, :]
+new_snirf_dtc = file.snirf_with_storm_prob()[0].nirs[0].probe.detectorPos3D[:, :]
+
+old_source = file.snirf_with_storm_prob()[1]
+old_detector = file.snirf_with_storm_prob()[2]
 print("\nModified Detector Positions in New Snirf File:")
-print(new.nirs[0].probe.detectorPos3D[:, :])
+print(new_snirf_src)
+print(new_snirf_dtc)
+print(old_source)
+print(old_detector)
 
 
     
