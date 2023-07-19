@@ -8,7 +8,7 @@ def process_json_files(folder_path):
     # Create a list of strings for the column names
     col_names = ['frame', 'person']
     data_list = []
-    for i in range(1, 26):
+    for i in range(0, 25):
         col_names.append('KP_'+str(i)+'_x')
         col_names.append('KP_'+str(i)+'_y')
         col_names.append('KP_'+str(i)+'_confidence')
