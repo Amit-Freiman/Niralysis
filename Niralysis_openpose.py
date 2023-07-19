@@ -32,13 +32,16 @@ class Niralysis:
             filtered_key_point_data (pd.DataFrame): filtered data frame containing only the key points given
         """
         # check if key points are valid
-        self.check_key_point_input()
+        
         # Set key_points_according_to_column_headers
-        columns_to_include = ["frame"]
+        column_names = self.data.columns
+        # Find the key points in the column headers
+
+        columns_to_include = ["frame","person"]
         for key_point in key_points:
-            for header in self.data.columns[0]:
-                if key_point in header:
-                    columns_to_include.append(header)
+            key_point_names = ["KP_" + str(key_point) + "_x", "KP_" + str(key_point) + "_y", "KP_" + str(key_point) + "_confidence"]
+            for header in key_point_names: 
+                columns_to_include.append(header)
 
         # extract key points
         filtered_key_point_data = self.data[columns_to_include]
