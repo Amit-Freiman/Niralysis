@@ -57,18 +57,19 @@ class Niralysis:
         # Add case if filtered_key_point_data is the same as self.data
         for column in filtered_key_point_data.columns:
             if "confidence" in column:
-                for confidence_per_time_stamp in filtered_key_point_data[column]:
+                for index, confidence_per_time_stamp in enumerate(filtered_key_point_data[column]):
                     # If confidence is less than TH, set the data in this time frame to 0 in both x and y coordinates
                     if confidence_per_time_stamp < confidence_threshold:
                         # set the values in the x and y rows in this key point to 0
                         # find the index of the confidence column
                         index_of_confidence_column = filtered_key_point_data.columns.get_loc(column)
                         # find the index of the x and y columns in this key point
-                        index_of_x_column = index_of_confidence_column - 2
-                        index_of_y_column = index_of_confidence_column - 1
+                        x_column = filtered_key_point_data.columns[index_of_confidence_column - 2]
+                        y_column = filtered_key_point_data.columns[index_of_confidence_column - 1]
                         # set the values in the x and y rows in this key point to 0
-                        filtered_key_point_data.iloc[index_of_x_column] = 0
-                        filtered_key_point_data.iloc[index_of_y_column] = 0
+                        filtered_key_point_data.loc[index,x_column] = 0
+                        filtered_key_point_data.loc[index,y_column] = 0
+        return filtered_key_point_data
 
     def calculate_change_in_distance(data):
         distance_table = calculate_pairwise_distance(data)
