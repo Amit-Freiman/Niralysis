@@ -1,13 +1,14 @@
 import pandas as pd
 import pathlib 
-from snirf import Snirf
 import numpy as np
 from typing import Union
+import re
+import mne
 
 
 class Niralysis:
 
-    def __init__(self, snirf_fname: Union[pathlib.Path, str]):
+    def __init__(self, snirf_fname: str):
             
         self.snirf_fname = pathlib.Path(snirf_fname)
         if not self.snirf_fname.exists():
@@ -25,10 +26,10 @@ class Niralysis:
      ### Read files ###
         
     def read_snirf(self):
-        self.snirf_file = Snirf(self.snirf_fname, 'r+')
+        self.snirf_file = mne.io.read_raw_snirf(self.snirf_fname)
 
 
-    def set_storm_file(self, storm_fname: Union[pathlib.Path, str]):
+    def set_storm_file(self, storm_fname: str):
         self.storm_fname = pathlib.Path(storm_fname)
         if not self.storm_fname.exists():
             raise ValueError("storm file not found!")
@@ -41,8 +42,8 @@ class Niralysis:
         if self.storm_fname is None:
             raise ValueError("No storm file set. Use 'set_storm_file' to provide a file path.")
         
-        self.storm_file = pd.read_csv(self.storm_fname)
-        self.storm_data = pd.DataFrame(self.storm_file)
+        self.storm_data = pd.read_csv(self.storm_fname,delim_whitespace=True, index_col=0, header=None)
+        self.storm_data.index.name = None
         return self.storm_data
     
 
@@ -50,11 +51,20 @@ class Niralysis:
 
     def storm_prob(self):
         storm_data = self.read_storm_to_DF()
-        storm_src = storm_data.loc
+        storm_src = storm_data[storm_data.index.astype(str).str.contains(r'^s\d+$')]
+        storm_dtc = storm_data[storm_data.index.astype(str).str.contains(r'^d\d+$')]
+        return storm_src, storm_dtc
+    
 
-
-
-            
+    def snirf_with_storm_prob(self):
+        snirf_file_copy = self.snirf_file.copy()
+        self.snirf_file.close()
+        storm_src, storm_dtc = self.storm_prob()
+        snirf_file_copy.nirs[0].probe.sourcePos3D[:, :] = storm_src[:, :]
+        snirf_file_copy.nirs[0].probe.detectorPos3D[:, :] = storm_dtc[:, :]
+        snirf_file_copy.save()
+        return snirf_file_copy
+       
 
     def is_same_dim(self):
         num_snirf_src_loc = np.shape(self.snirf_src_loc)[0]
@@ -64,6 +74,20 @@ class Niralysis:
         if num_snirf_src_loc !=num_storm_src or num_snirf_dtc_loc !=num_storm_dtc:
             raise ValueError("File does not exsist.")
         
+
+file = Niralysis('sub_demo.snirf')
+file.read_snirf()  
+file.set_storm_file('STORM_demo.txt')
+file.read_storm_to_DF()
+storm_src, storm_dtc = file.storm_prob()
+print("Storm Source Positions:")
+print(storm_src)
+print("\nStorm Detector Positions:")
+print(storm_dtc)
+
+new = file.snirf_with_storm_prob()
+print("\nModified Detector Positions in New Snirf File:")
+print(new.nirs[0].probe.detectorPos3D[:, :])
 
 
     
