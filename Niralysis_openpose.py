@@ -48,7 +48,7 @@ class Niralysis:
         return filtered_key_point_data
 
     def filter_confidence(filtered_key_point_data, confidence_threshold: float = 0.5):
-        """Filter data based on confidence, if confidence is less than 0.5 in a specific key point and time frame, then
+        """Filter data based on confidence, if confidence  rmdir /s /q E:\testis less than 0.5 in a specific key point and time frame, then
         the data in this time frame is set to 0.
         The columns are organized as follows: KP_1_x, KP_1_y, KP_1_confidence, KP_2_x, KP_2_y, KP_2_confidence, etc.
         Args:
