@@ -1,13 +1,18 @@
 import pandas as pd
 from jsonOrganizer import process_json_files
+from calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps
+from calculate_pairwise_distance import calculate_pairwise_distance
+
 
 
 class Niralysis:
     """Class for fNIR analysis of OpenPose"""
 
     FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
+    HEAD_KP = [0,1,2,5,15,16,17,18]
+    ARM_KP = [1,2,3,4,5,6,7,8]
 
-    def __init__(self, fname: str):
+    def __init__(self):
         """
         Initialize the class
         Args:
@@ -74,17 +79,20 @@ class Niralysis:
 
     def calculate_change_in_distance(data):
         distance_table = calculate_pairwise_distance(data)
-        change_in_distance_table = calculate_change_in_position_per_frame(distance_table)
-        pass
+        change_in_distance_table = Niralysis.calculate_change_in_position_per_frame(distance_table)
+        return distance_table
+        
 
-    def calculate_change_in_position_per_frame(self):
+    def calculate_change_in_position_per_frame(data):
         """"""
-        pass
+        change_in_position_table = get_table_of_deltas_between_time_stamps_in_all_kps(data)
+        return change_in_position_table
+        
 
     def generate_motion_labels_by_change(self):
         """Generate motion labels per time stamp according to change in x and y coordinates"""
 
-    def generate_open_pose(self, path_to_open_pose_output_folder: str, beginning_of_recording: list, key_points_to_extract: list):
+    def generate_open_pose(self, path_to_open_pose_output_folder: str, beginning_of_recording: list = 0, key_points_to_extract: list = HEAD_KP):
         """Generates attribute file.motionlabels (Timestamps for certain motion labels from video)
         Args:
             path_to_open_pose_output_folder (str): path to open pose output folder (folder containing all json files)
@@ -95,8 +103,8 @@ class Niralysis:
         """
         self.data = self.get_csv(path_to_open_pose_output_folder)
         df_extracted = self.extract_key_point(key_points_to_extract)
-        self.filter_confidence()
-
+        df_filtered = Niralysis.filter_confidence(df_extracted)
+        return df_filtered
 
     def filter_labels(self):
         """Filter data using timestamps of motion labels"""
