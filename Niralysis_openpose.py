@@ -1,3 +1,5 @@
+import pandas as pd
+
 
 class Niralysis:
     """Class for fNIR analysis of OpenPose"""
@@ -14,13 +16,41 @@ class Niralysis:
         """
         pass
 
-    def extract_key_point(self, key_points: list):
-        """"""
-        pass
+    def extract_key_point(self, key_points: list) -> pd.DataFrame:
+        """Extract the data of the key points from the csv file, according to the key points given.
+        Args:
+            key_points (list): list of key points to extract
+        Returns:
+            filtered_key_point_data (pd.DataFrame): filtered key point data
+        """
+        # check if key points are valid
+        self.check_key_point_input()
+        # Set key_points_according_to_column_headers
+        columns_to_include = ["frame"]
+        for key_point in key_points:
+            for header in self.data.columns[0]:
+                if key_point in header:
+                    columns_to_include.append(header)
 
-    def filter_confidence(self):
-        """"""
-        pass
+        # extract key points
+        filtered_key_point_data = self.data[columns_to_include]
+        return filtered_key_point_data
+
+    def filter_confidence(self, confidence_threshold: float = 0.5):
+        """Filter data based on confidence, if confidence is less than 0.5 in a specific key point and time frame, then
+        the data in this time frame is set to 0.
+        The columns are organized as follows: KP_1_x, KP_1_y, KP_1_confidence, KP_2_x, KP_2_y, KP_2_confidence, etc.
+        Args:
+            confidence_threshold (float): confidence threshold
+        """
+        for column in self.data.columns:
+            if "confidence" in column:
+                for confidence_per_time_stamp in self.data[column]:
+                    # If confidence is less than TH, set the data in this time frame to 0 in both x and y coordinates
+                    if confidence_per_time_stamp < confidence_threshold:
+                        # set the values in the x and y rows in this key point to 0
+                        self.data[column - 2] = 0
+                        self.data[column - 1] = 0
 
     def check_movement(self):
         """"""
@@ -32,6 +62,7 @@ class Niralysis:
 
     def generate_motion_labels_by_change(self):
         """Generate motion labels per time stamp according to change in x and y coordinates"""
+        pass
 
     def generate_open_pose(self, path_to_open_pose_output_folder: str, beginning_of_recording: list, key_points_to_extract: list):
         """Generates attribute file.motionlabels (Timestamps for certain motion labels from video)
@@ -42,7 +73,9 @@ class Niralysis:
         Returns:
             open_pose_data (list): list of lists of open pose data
         """
-        pass
+        extract_key_point = self.extract_key_point(key_points_to_extract)
+        self.filter_confidence()
+
 
     def filter_labels(self):
         """Filter data using timestamps of motion labels"""
