@@ -22,19 +22,22 @@ def get_table_of_deltas_between_time_stamps_in_all_kps(x_y_data: pd.DataFrame) -
         time stamp and the value in the previous time stamp, that is not 0.
 
     """
-    deltas = pd.DataFrame(columns=x_y_data.columns)
+    if x_y_data.empty:
+        raise ValueError("The input DataFrame is empty.")
+
     counter_of_all_zeros_in_a_row_for_all_kps = dict()
+    deltas = pd.DataFrame(index=x_y_data.index[:-1], columns=x_y_data.columns).fillna(float('nan'))
 
     for kp in x_y_data.columns:
         counter_of_all_zeros_in_a_row_for_all_kps[kp] = dict()
         loc_of_last_timestamp_before_zero = 0
         counter_of_zeros_in_a_row = 0
         for time_stamp in range(len(x_y_data)-1):
-            if x_y_data[kp][time_stamp] != 0 and x_y_data[kp][time_stamp+1] != 0:
+            if x_y_data[kp][time_stamp] > 0 and x_y_data[kp][time_stamp+1] > 0:
                 deltas[kp][time_stamp] = get_distance_of_coordinate_between_two_time_stamps(x_y_data[kp][time_stamp],
                                                                                             x_y_data[kp][time_stamp+1])
                 continue
-            if x_y_data[kp][time_stamp] == 0 and x_y_data[kp][time_stamp+1] != 0:
+            if x_y_data[kp][time_stamp] == 0 and x_y_data[kp][time_stamp+1] > 0:
                 loc_of_time_stamp = loc_of_last_timestamp_before_zero
                 this_time_stamp_value = x_y_data[kp][loc_of_time_stamp]  # last value before zero values
                 next_time_stamp_value = x_y_data[kp][time_stamp+1]
@@ -47,7 +50,7 @@ def get_table_of_deltas_between_time_stamps_in_all_kps(x_y_data: pd.DataFrame) -
                 counter_of_zeros_in_a_row += 1
                 deltas[kp][time_stamp] = 0
                 continue
-            if x_y_data[kp][time_stamp] != 0 and x_y_data[kp][time_stamp+1] == 0:
+            if x_y_data[kp][time_stamp] > 0 and x_y_data[kp][time_stamp+1] == 0:
                 loc_of_last_timestamp_before_zero = time_stamp
                 deltas[kp][time_stamp] = 0
                 counter_of_zeros_in_a_row = 1
