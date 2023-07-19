@@ -8,18 +8,20 @@ from typing import Union
 
 class Niralysis:
 
-def __init__(self, snirf_fname: Union[pathlib.Path, str], storm_fname: Union[pathlib.Path, str]):
+def __init__(self, snirf_fname: Union[pathlib.Path, str]):
         
-        self.snirf_fname = pathlib.Path(snirf_fname)
-        if not self.snirf_fname.exists():
-            raise ValueError("snirf file does not exsist.") 
+    self.snirf_fname = pathlib.Path(snirf_fname)
+    if not self.snirf_fname.exists():
+        raise ValueError("snirf file does not exsist.") 
         
+
+def read_storm (self, storm_fname: Union[pathlib.Path, str]):
         self.storm_fname = pathlib.Path(storm_fname)
         if not self.storm_fname.exists():
             raise ValueError("storm file not found!")
                
     
-    def read_snirf(self.snirf_fname):
+def read_snirf(self.snirf_fname):
         self.snirf_file = Snirf(self.snirf_fname, 'r+')
 
 
