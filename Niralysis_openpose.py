@@ -60,8 +60,9 @@ class Niralysis:
                         self.data[column - 2] = 0
                         self.data[column - 1] = 0
 
-    def check_movement(self):
-        """"""
+    def calculate_change_in_distance(data):
+        distance_table = calculate_pairwise_distance(data)
+        change_in_distance_table = calculate_change_in_position_per_frame(distance_table)
         pass
 
     def calculate_change_in_position_per_frame(self):
