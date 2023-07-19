@@ -69,7 +69,8 @@ class Niralysis:
                         # set the values in the x and y rows in this key point to 0
                         filtered_key_point_data.loc[index,x_column] = 0
                         filtered_key_point_data.loc[index,y_column] = 0
-        return filtered_key_point_data
+
+        return filtered_key_point_data[filtered_key_point_data.columns.drop(list(filtered_key_point_data.filter(regex='confidence')))]
 
     def calculate_change_in_distance(data):
         distance_table = calculate_pairwise_distance(data)
