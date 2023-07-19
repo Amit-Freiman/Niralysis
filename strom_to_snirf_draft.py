@@ -15,11 +15,28 @@ class Niralysis:
         
     
     def read_snirf(self):
-        self.snirf = Snirf(self.snirf_fname, 'r+')
+        self.snirf_file = Snirf(self.snirf_fname, 'r+')
+
+    def read_storm(self):
+        pass
 
 
-snirf_file = Snirf(r'C:\\Users\\User\\Python for Neurosceince\\Hackathon\\Niralysis\\sub_demo.snirf', 'r+')       
-snirf_detectors_loc = snirf_file.nirs[0].probe.detectorPos3D[:,:]
-snirf_sourcers_loc = snirf_file.nirs[0].probe.sourcePos3D[:,:]
-num_snirf_sourcers_loc = np.shape(snirf_sourcers_loc)[0]
-num_snirf_detectors_loc = np.shape(snirf_detectors_loc)[0]
+    def is_same_dim(self):
+        snirf_dtc_loc = self.snirf_file.nirs[0].probe.detectorPos3D[:,:]
+        snirf_src_loc = self.snirf_file.nirs[0].probe.sourcePos3D[:,:]
+        num_snirf_src_loc = np.shape(snirf_src_loc)[0]
+        num_snirf_dtc_loc = np.shape(snirf_dtc_loc)[0]
+        num_storm_dtc = 23
+        num_storm_src = 16
+
+        if num_snirf_src_loc !=num_storm_src or num_snirf_dtc_loc !=num_storm_dtc:
+            raise ValueError("File does not exsist.")
+
+
+
+
+
+
+
+
+
