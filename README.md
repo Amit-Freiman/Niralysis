@@ -78,7 +78,7 @@ NIRalysis is a Python package designed to facilitate the analysis of functional 
 ### Built With
 
 * [![Next][Next.js]][Next-url] # Template for relevant libraries 
-
+* [![SNIRF][Next.js]][Next-url] # Template for relevant libraries 
 ADD MAJOR LIBRARIES/FRAMEWORKS (check option to drop whole section)
 
 
@@ -93,11 +93,11 @@ This is an example of how you may give instructions on setting up your project l
 To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
+Our package code facilitates the processing of output files containing the following application. These application are integral components of the package, which can be either downloaded or utilized in conjunction with their respective output files.
 
-* STORM
-  ```sh
-  CHANGE TO STORM installation?
-  ```
+* [![STORM][STORM-shield]][STORM-url]
+* [![OpenPose][OpenPose-shield]][OpenPose-url]
+
   openpose
   ```sh
   CHANGE TO OpenPose link? 
@@ -227,3 +227,8 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [license-url]: https://github.com/Amit-Freiman/Niralysis/blob/main/LICENSE
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
+[STORM-shield]: https://img.shields.io/github/yoterel/STORM-Net.svg?style=for-the-badge
+[STORM-url]: https://github.com/yoterel/STORM-Net
+[OpenPose-shield]: https://img.shields.io/github/CMU-Perceptual-Computing-Lab/openpose.svg?style=for-the-badge
+[OpenPose-url]: https://github.com/CMU-Perceptual-Computing-Lab/openpose
+
