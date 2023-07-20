@@ -80,7 +80,7 @@ class Niralysis:
     def calculate_change_in_distance(data):
         distance_table = calculate_pairwise_distance(data)
         change_in_distance_table = Niralysis.calculate_change_in_position_per_frame(distance_table)
-        return distance_table
+        return change_in_distance_table
         
 
     def calculate_change_in_position_per_frame(data):
@@ -104,7 +104,8 @@ class Niralysis:
         self.data = self.get_csv(path_to_open_pose_output_folder)
         df_extracted = self.extract_key_point(key_points_to_extract)
         df_filtered = Niralysis.filter_confidence(df_extracted)
-        return df_filtered
+        self.change_in_position = Niralysis.calculate_change_in_position_per_frame(df_filtered)
+        self.change_in_distance = Niralysis.calculate_change_in_distance(df_filtered)
 
     def filter_labels(self):
         """Filter data using timestamps of motion labels"""
