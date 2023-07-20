@@ -424,23 +424,21 @@ class Niralysis:
         change_in_position_table = get_table_of_deltas_between_time_stamps_in_all_kps(data)
         return change_in_position_table
 
-    def generate_motion_labels_by_change(self):
-        """Generate motion labels per time stamp according to change in x and y coordinates"""
-
-        self.motion_label = events_to_labels(self.changed_frames, 3)
-
-    def generate_open_pose(self, path_to_open_pose_output_folder: str, key_points_to_extract: int = 0, beginning_of_recording: list = 0):
+    def generate_open_pose(self, path_to_open_pose_output_folder: str, key_points_to_extract: int = 0, beginning_of_recording: int = 0):
 
         """
         Generates attribute file.motionlabels (Timestamps for certain motion labels from video).
 
         Args:
             path_to_open_pose_output_folder (str): path to open pose output folder (folder containing all json files)
-            beginning_of_recording (list): list of lists of the beginning of the recording
-            key_points_to_extract (list): list of key points to extract
+            beginning_of_recording (list): starting time of the recording to transform the timestamps (as frames) to seconds
+            key_points_to_extract (list): 0 (defualt) to extract only head key points, 1 to extract head and arms key points
 
-        Returns:
-            open_pose_data (list): list of lists of open pose data
+        Adds to self:
+            data (pd.DataFrame): data frame of the json file combined
+            changed_frames (pd.DataFrame): data frame of the change in distance and position for each keypoint
+              between consecutive time frames for each key point
+            motion_label (pd.DataFrame): data frame of the motion labels for each timestamp
             """
         
         if type(key_points_to_extract) != int:
@@ -461,7 +459,7 @@ class Niralysis:
         change_in_position = Niralysis.calculate_change_in_position_per_frame(df_filtered)
         change_in_distance = Niralysis.calculate_change_in_distance(df_filtered)
         self.changed_frames = get_table_of_summed_distances_for_kp_over_time(change_in_position, change_in_distance, 50)
-
+        self.motion_label = events_to_labels(self.changed_frames)
 
 
 #####Testing the code ####

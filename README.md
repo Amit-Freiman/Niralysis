@@ -104,10 +104,10 @@ file.invalidsource(Threshold)
 # Provide a list of detectors that are off-temaplate by deafult threshold of 20mm.
 file.invaliddetector(Threshold)
 
-# Generates attribute file.changed_frames (Timestampsand the changes in keypoints) 
+# Generates attributes: 
+# data (Raw data combined from json files), changed_frames (Timestampsand the changes in keypoints) and motion_label (Timestamps for a given label)
 file.generate_open_pose('path to openpose output folder')
-# Generates attribute file.motion_label (Timestamps for a given label) 
-file.generate_motion_label_by_change 
+
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
