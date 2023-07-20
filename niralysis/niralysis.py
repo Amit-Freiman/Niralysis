@@ -279,7 +279,6 @@ class Niralysis:
             self.is_storm_valid()
         except ValueError as error:
             print(error)
-            return
         # check if data is a Snirf object
         if type(data) != Snirf:
             raise TypeError("data must be a Snirf object")

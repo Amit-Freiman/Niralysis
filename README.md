@@ -63,16 +63,16 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-NIRalysis - A Python Package for fNIRS Data Analysis and Probe Location Augmentation
+NIRalysis - A Python Package for fNIRS Data Analysis
 
-NIRalysis is a Python package designed to facilitate the analysis of functional Near-Infrared Spectroscopy (fNIRS) data. This tool enables the processing of fNIRS output files, known as "snirf" files, while enhancing them with precise probe location information obtained from STORM files.  NIRalysis also takes OpenPose data which detect human body, hand, facial, and foot keypoints out of video footage and integrate the information with snirf data. By fusing fNIRS data with accurate probe coordinates, NIRalysis provides more accurate and reliable research and insights.
+NIRalysis is a Python package designed to facilitate the analysis of functional Near-Infrared Spectroscopy (fNIRS) data. This tool enables the processing of fNIRS output files, known as "snirf" files, while enhancing them with precise probe location information obtained from STORM files.  NIRalysis also takes OpenPose data which detect human body, hand, facial, and foot keypoints out of video footage and integrate the information with snirf data. By fusing fNIRS data with accurate probe coordinates and head movement according to timestamps, NIRalysis provides more accurate and reliable research and insights.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
 ### Built With
-* [![SNIRF][snirf-shield]][snirf-url] # Template for relevant libraries 
+* [![SNIRF][snirf-shield]][snirf-url] 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- Prerequisites -->
@@ -119,14 +119,14 @@ file.generate_open_pose('path to openpose output folder')
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add method 'storm'
-- [ ] Add method 'generate_open_pose'
-    - [ ] Import/Copy jsonOrganizer.py from personal library
-- [ ] Add method filet_labels
-- [ ] Fix README with proper usage + installation 
-- [ ] Add test file 
-- [ ] Change Roadmap to future directions of library
-- [ ] Package library and check everythink works (sort of)
+- [X] Add general method 'storm'
+- [X] Add general method 'generate_open_pose'
+- [ ] Check pytest works 
+- [ ] Package library
+- [ ] Next steps
+    - [ ] Add method filter_by_labels
+    - [ ] Add hand movement labels to method 'generate_open-pose'
+    - [ ] Add check_optode_drift (next step for method 'storm')      
 
 See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
 
