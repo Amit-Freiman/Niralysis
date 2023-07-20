@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 def calculate_pairwise_distance(data):
     """
     Calculate the pairwise distance between keypoints in each frame.
