@@ -3,7 +3,7 @@ from niralysis.jsonOrganizer import process_json_files
 from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
 from niralysis.calculate_pairwise_distance import calculate_pairwise_distance
 import pathlib
-from Events_to_label import events_to_labels 
+from niralysis.Events_to_label import events_to_labels 
 
 class Niralysis:
     """Class for fNIR analysis of OpenPose"""
