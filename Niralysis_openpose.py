@@ -3,7 +3,7 @@ from niralysis.jsonOrganizer import process_json_files
 from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
 from niralysis.calculate_pairwise_distance import calculate_pairwise_distance
 import pathlib
-
+from Events_to_label import events_to_labels 
 
 class Niralysis:
     """Class for fNIR analysis of OpenPose"""
@@ -88,6 +88,7 @@ class Niralysis:
 
     def generate_motion_labels_by_change(self):
         """Generate motion labels per time stamp according to change in x and y coordinates"""
+        self.motion_label = events_to_labels(self.changed_frames)
 
     def generate_open_pose(self, path_to_open_pose_output_folder: str, key_points_to_extract: int = 0, beginning_of_recording: list = 0):
         """Generates attribute file.motionlabels (Timestamps for certain motion labels from video)
