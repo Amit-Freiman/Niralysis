@@ -45,10 +45,8 @@
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -65,8 +63,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
 NIRalysis - A Python Package for fNIRS Data Analysis and Probe Location Augmentation
 
 NIRalysis is a Python package designed to facilitate the analysis of functional Near-Infrared Spectroscopy (fNIRS) data. This tool enables the processing of fNIRS output files, known as "snirf" files, while enhancing them with precise probe location information obtained from STORM files. By fusing fNIRS data with accurate probe coordinates, NIRalysis provides more accurate and reliable research and insights.
@@ -76,42 +72,16 @@ NIRalysis is a Python package designed to facilitate the analysis of functional 
 
 
 ### Built With
-
-* [![Next][Next.js]][Next-url] # Template for relevant libraries 
 * [![SNIRF][snirf-shield]][snirf-url] # Template for relevant libraries 
-
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+<!-- Prerequisites -->
 
 ### Prerequisites
 Our package code facilitates the processing of output files containing the following application. These application are integral components of the package, which can be either downloaded or utilized in conjunction with their respective output files.
 
 * [![STORM][STORM-shield]][STORM-url]
 * [![OpenPose][OpenPose-shield]][OpenPose-url]
-
-### Installation
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -129,14 +99,16 @@ file = niralysis('path to .snirf file')
 
 # Replaces probe_location variable in .snirf file with digitized locations from STORM input
 file.storm('path to STORM file')
+# Provide a list of sources that are off-temaplate by deafult threshold of 20mm.
+file.invalidsource(Threshold)
+# Provide a list of detectors that are off-temaplate by deafult threshold of 20mm.
+file.invaliddetector(Threshold)
 
-# Generates attribute file.motionlabels (Timestamps for certain motion labels from video) 
-file.generate_open_pose('path to openpose output folder', subject number in openpose, beginning of recording)
-
-# Filters data using timestamps of motion labels 
-file.filter_labels()
+# Generates attribute file.changed_frames (Timestampsand the changes in keypoints) 
+file.generate_open_pose('path to openpose output folder')
+# Generates attribute file.motion_label (Timestamps for a given label) 
+file.generate_motion_label_by_change 
 ```
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -157,8 +129,6 @@ file.filter_labels()
 See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -196,8 +166,6 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
@@ -219,8 +187,6 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [issues-url]: https://github.com/github_username/repo_name/issues
 [license-shield]: https://img.shields.io/github/license/Amit-Freiman/Niralysis.svg?style=for-the-badge
 [license-url]: https://github.com/Amit-Freiman/Niralysis/blob/main/LICENSE
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
 [STORM-shield]: https://img.shields.io/badge/STORM-F2BB30
 [STORM-url]: https://github.com/yoterel/STORM-Net
 [OpenPose-shield]:https://img.shields.io/badge/OpenPose-35668F
