@@ -88,7 +88,7 @@ class Niralysis:
 
     def generate_motion_labels_by_change(self):
         """Generate motion labels per time stamp according to change in x and y coordinates"""
-        self.motion_label = events_to_labels(self.changed_frames)
+        self.motion_label = events_to_labels(self.changed_frames, 3)
 
     def generate_open_pose(self, path_to_open_pose_output_folder: str, key_points_to_extract: int = 0, beginning_of_recording: list = 0):
         """Generates attribute file.motionlabels (Timestamps for certain motion labels from video)
