@@ -1,6 +1,6 @@
-import pytest
 import pandas as pd
-from Niralysis_openpose import *
+import pytest
+from ..Niralysis_openpose import calculate_change_in_distance, calculate_change_in_position_per_frame
 
 # Test functions
 def test_calculate_change_in_distance():
