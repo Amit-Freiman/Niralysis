@@ -1,8 +1,8 @@
 import pandas as pd
-from jsonOrganizer import process_json_files
-from calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps
-from calculate_pairwise_distance import calculate_pairwise_distance
-
+from niralysis.jsonOrganizer import process_json_files
+from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps
+from niralysis.calculate_pairwise_distance import calculate_pairwise_distance
+import pathlib
 
 
 class Niralysis:
@@ -37,9 +37,7 @@ class Niralysis:
             filtered_key_point_data (pd.DataFrame): filtered data frame containing only the key points given
         """
         # check if key points are valid
-        
-        # Set key_points_according_to_column_headers
-        column_names = self.data.columns
+        self.check_key_point_input(key_points)
         # Find the key points in the column headers
 
         columns_to_include = []
@@ -92,7 +90,7 @@ class Niralysis:
     def generate_motion_labels_by_change(self):
         """Generate motion labels per time stamp according to change in x and y coordinates"""
 
-    def generate_open_pose(self, path_to_open_pose_output_folder: str, beginning_of_recording: list = 0, key_points_to_extract: list = HEAD_KP):
+    def generate_open_pose(self, path_to_open_pose_output_folder: str, key_points_to_extract: int = 0, beginning_of_recording: list = 0):
         """Generates attribute file.motionlabels (Timestamps for certain motion labels from video)
         Args:
             path_to_open_pose_output_folder (str): path to open pose output folder (folder containing all json files)
@@ -101,6 +99,18 @@ class Niralysis:
         Returns:
             open_pose_data (list): list of lists of open pose data
         """
+        if type(key_points_to_extract) != int:
+            raise TypeError("key_points_to_extract must be an integer")
+        if key_points_to_extract > 1 or key_points_to_extract < 0:
+            raise ValueError("key_points_to_extract must be 0 (Just head) or 1 (Head and arms))")
+        if type(path_to_open_pose_output_folder) == pathlib.WindowsPath:
+            path_to_open_pose_output_folder = str(path_to_open_pose_output_folder)
+        if type(path_to_open_pose_output_folder) != str:
+            raise TypeError("path_to_open_pose_output_folder must be a string")
+        if key_points_to_extract == 0:
+            key_points_to_extract = Niralysis.HEAD_KP
+        else:
+            key_points_to_extract = Niralysis.ARM_KP + Niralysis.HEAD_KP
         self.data = self.get_csv(path_to_open_pose_output_folder)
         df_extracted = self.extract_key_point(key_points_to_extract)
         df_filtered = Niralysis.filter_confidence(df_extracted)
