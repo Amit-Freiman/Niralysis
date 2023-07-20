@@ -50,3 +50,140 @@ def get_table_of_deltas_between_time_stamps_in_all_kps(x_y_data: pd.DataFrame) -
                 deltas.at[time_stamp, kp] = 0
                 counter_of_zeros_in_a_row = 1
     return deltas
+
+
+# def get_table_of_summed_distances_for_kp_over_time(deltas_table: pd.DataFrame, threshold: float) -> pd.DataFrame:
+#     """Calculate the summed distance of a key point over time
+#     Sums the deltas in the nose kp, until sum reaches the threshold.
+#     When sum reaches threshold, sums the deltas in the corresponding rows for every kp in table.
+#
+#     Args:
+#         deltas_table (pd.DataFrame): data frame of deltas between each 2 consecutive time stamps (0-1, 1-2, 2-3, etc.)
+#                                         Each row corresponds to the difference between two consecutive time stamps.
+#         threshold (float): threshold of summed distance of nose kp over time
+#     Returns:
+#         summed_distances (pd.DataFrame): data frame of summed distances of every kp over time.
+#                                             Each row corresponds to the summed distance of every kp over time
+#                                             until threshold is reached.
+#
+#     Algorithm: Sum nose columns values until threshold is reached, if threshold is reached, sum all columns values and
+#     continue summing until threshold is reached again, etc., until the end of the table.
+#     Keep track of the time stamps until threshold is reached, and the time stamps after threshold is reached, and save
+#     them in a column in the sums table.
+#     """
+#
+#     sums = pd.DataFrame(columns=deltas_table.columns)
+#     nose_columns_names = deltas_table.columns["KP_0_x", "KP_0_y"]
+#     timestamps = ['0']  # list of starting time stamps of every sum
+#     running_timestamp = 0  # Current time stamp
+#     sum_until_threshold_is_reached_x = 0  # Sum of nose x values until threshold is reached
+#     sum_until_threshold_is_reached_y = 0  # Sum of nose y values until threshold is reached
+#     number_of_thresholds_reached = 0  # Number of thresholds reached
+#     timestamps_of_thresholds = []  # List of time stamps of starting and ending of every sum
+#
+#     for time_stamp in range(deltas_table.shape[0]):
+#         sum_until_threshold_is_reached_x += deltas_table[nose_columns_names[0]][time_stamp]
+#         sum_until_threshold_is_reached_y += deltas_table[nose_columns_names[1]][time_stamp]
+#         if sum_until_threshold_is_reached_x > threshold or sum_until_threshold_is_reached_y > threshold:
+#             # Sum all columns values between last timestamp before threshold is reached and current timestamp.
+#             # Add the sum to the sums table.
+#             for kp in deltas_table.columns:
+#                 # sum all columns values between last timestamp before threshold is reached and current timestamp for
+#                 # every kp
+#                 sums.at[number_of_thresholds_reached, kp] = deltas_table[kp][timestamps[-1]:time_stamp].sum()
+#             # Reset the sum until threshold is reached
+#             sum_until_threshold_is_reached_x = 0
+#             number_of_thresholds_reached += 1
+#             timestamps_of_thresholds.append(f"{timestamps[-1]}-{time_stamp}")
+#             #####timestamps.append(timestamps_of_thresholds[-1])
+#         running_timestamp += 1  # running_timestamp is the number of the current timestamp, starting from 0
+#
+#     # Add timestamps to sums table as a column
+#     sums["timestamps"] = timestamps
+#     return sums
+
+
+def get_table_of_summed_distances_for_kp_over_time(deltas_table: pd.DataFrame, threshold: float) -> pd.DataFrame:
+    """Calculate the summed distance of a key point over time
+    Sums the deltas in the nose kp, until sum reaches the threshold.
+    When sum reaches threshold, sums the deltas in the corresponding rows for every kp in table.
+
+    Args:
+        deltas_table (pd.DataFrame): data frame of deltas between each 2 consecutive time stamps (0-1, 1-2, 2-3, etc.)
+                                        Each row corresponds to the difference between two consecutive time stamps.
+        threshold (float): threshold of summed distance of nose kp over time
+    Returns:
+        summed_distances (pd.DataFrame): data frame of summed distances of every kp over time.
+                                            Each row corresponds to the summed distance of every kp over time
+                                            until threshold is reached.
+
+    Algorithm:
+    1. Use sum_until_threshold function to get a list of starting and ending time stamps of every sum, and a dict of the
+    sums for every starting point.
+    2. According to the list, sum all columns values in this area for every kp using sum_all_kp_for_range function.
+    3. Add the sum to the sums table.
+    """
+    sums = pd.DataFrame(columns=deltas_table.columns)
+    nose_columns_names = ["KP_0_x", "KP_0_y"]
+
+    nose_x_list = list(deltas_table[nose_columns_names[0]])
+    # nose_y_list = list(deltas_table[nose_columns_names[1]])
+    start_to_end_locations_tuple_list_x, sums_x = sum_until_threshold(nose_x_list, threshold)
+    # start_to_end_locations_dict_y, sums_y = sum_until_threshold(nose_y_list, threshold)
+    sums["timestamps"] = create_timestamps_column(start_to_end_locations_tuple_list_x)
+
+    for kp in deltas_table.columns:
+        column_of_sums_per_kb = create_column_of_sum_for_kp_in_range(deltas_table[kp], start_to_end_locations_tuple_list_x)
+        sums[kp] = column_of_sums_per_kb
+    return sums
+
+
+def create_timestamps_column(start_to_end_locations_tuple_list: list) -> pd.DataFrame:
+    """Recieves a list of tuples of start and end locations of sums.
+    Returns a data frame with a column of the start and end locations of the sums."""
+    timestamps_column = pd.DataFrame(columns=["timestamps"])
+    for i, j in start_to_end_locations_tuple_list:
+        timestamps_column.at[i, "timestamps"] = f"{i}-{j}"
+    return timestamps_column
+
+
+def create_column_of_sum_for_kp_in_range(delta_kp_column: pd.DataFrame, ranges: list) -> pd.DataFrame:
+    """Recieves a column of the kp, and a list of ranges.
+    Sums the values in this range and return a row with the sums, as a data frame."""
+    sum_rows = pd.DataFrame(columns=["sums"])
+    for i, j in ranges:
+        sum_rows.at[i, :] = delta_kp_column.iloc[i:j, :].sum()
+    return sum_rows
+
+
+def sum_until_threshold(values: list, threshold) -> (list, dict):
+    """The list consists of values.
+    Go over the sum of every 30 values in the list, and insert to a new list all the sums that are bigger than threshold.
+    return a list that contains all the 30-values interval sums that are bigger than threshold"""
+    start_to_end_locations_tuple_list = []
+    sums = dict()
+    for i in range(len(values)):
+        for j in range(30):
+            if sum(values[i:i+j]) > threshold:
+                start_to_end_locations_tuple_list.append((i, i+j))
+                sums[i] = sum(values[i:i+j])
+    return start_to_end_locations_tuple_list, sums
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
