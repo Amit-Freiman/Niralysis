@@ -155,7 +155,7 @@ class Niralysis:
         data.nirs[0].probe.sourcePos3D[:, :] = storm_sourc_loc
         data.nirs[0].probe.detectorPos3D[:, :] = storm_detc_loc
 
-        data.save(rf'{self.snirf_fname}')
+        data.save(r'C:\\Amit - General Folder\\Code\\Python\\Niralysis\\sub_demo_DEMO.snirf')
 
 
     def is_same_dim(self):
