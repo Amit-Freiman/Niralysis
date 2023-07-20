@@ -52,7 +52,7 @@ def get_table_of_deltas_between_time_stamps_in_all_kps(x_y_data: pd.DataFrame) -
     return deltas
 
 
-def get_table_of_summed_distances_for_kp_over_time(deltas_table: pd.DataFrame, threshold: int) -> pd.DataFrame:
+def get_table_of_summed_distances_for_kp_over_time(change_in_position: pd.DataFrame, change_in_distance: pd.DataFrame, threshold: int) -> pd.DataFrame:
     """Calculate the summed distance of a key point over time
     Sums the deltas in the nose kp, until sum reaches the threshold.
     When sum reaches threshold, sums the deltas in the corresponding rows for every kp in table.
@@ -72,18 +72,24 @@ def get_table_of_summed_distances_for_kp_over_time(deltas_table: pd.DataFrame, t
     2. According to the list, sum all columns values in this range of start-end for every kp using sum_all_kp_for_range
         function. For every kp, add the sum to the sums table.
     """
-    sums = pd.DataFrame(columns=deltas_table.columns)
+    column_list = list(change_in_position.columns)
+    column_list.extend(list(change_in_distance.columns))
+    change = pd.DataFrame(columns=column_list)
     nose_columns_names = ["KP_0_x", "KP_0_y"]
 
-    nose_x_list = list(deltas_table[nose_columns_names[0]])
-    nose_y_list = list(deltas_table[nose_columns_names[1]])
+    nose_x_list = list(change_in_position[nose_columns_names[0]])
+    nose_y_list = list(change_in_position[nose_columns_names[1]])
     start_to_end_locations_tuple_list = get_start_to_end_list(nose_x_list, nose_y_list, threshold)
-    sums["timestamps"] = create_timestamps_column(start_to_end_locations_tuple_list)
+    change["timestamps"] = create_timestamps_column(start_to_end_locations_tuple_list)
 
-    for kp in deltas_table.columns:
-        column_of_sums_per_kb = create_column_of_sum_for_kp_in_range(deltas_table[kp], start_to_end_locations_tuple_list)
-        sums[kp] = column_of_sums_per_kb
-    return sums
+    for kp in change_in_position.columns:
+        column_of_sums_per_kb = create_column_of_sum_for_kp_in_range(change_in_position[kp], start_to_end_locations_tuple_list)
+        change[kp] = column_of_sums_per_kb
+    for kp in change_in_distance.columns:
+        column_of_sums_per_kb = create_column_of_difference_between_kp_in_range(change_in_distance[kp], start_to_end_locations_tuple_list)
+        change[kp] = column_of_sums_per_kb
+    
+    return change
 
 
 def create_timestamps_column(start_to_end_locations_tuple_list: list) -> pd.DataFrame:
@@ -110,6 +116,20 @@ def create_column_of_sum_for_kp_in_range(delta_kp_column: pd.DataFrame, ranges: 
         sum_rows.at[i, "sums"] = delta_kp_column[i:j].sum()
     return sum_rows
 
+
+def create_column_of_difference_between_kp_in_range(delta_kp_column: pd.DataFrame, ranges: list) -> pd.DataFrame:
+    """Calculates the difference between the last frame and the first frame of every tuple in the list, and returns a data frame column of the differences.
+    Args:
+        delta_kp_column (pd.DataFrame): a column of the deltas
+        ranges (list): a list of tuples of start and end locations of differences.
+    Returns:
+        difference_rows (pd.DataFrame): a data frame with a column of the differences of the kp in the ranges."""
+    difference_rows = pd.DataFrame(columns=["difference"])
+    for i, j in ranges[:-625]:
+        difference_rows.at[i, "difference"] = delta_kp_column[j] - delta_kp_column[i]
+    # for i, j in ranges:
+    #     difference_rows.at[i, "sums"] = delta_kp_column[j] - delta_kp_column[i]
+    return difference_rows
 
 def get_start_to_end_list(values_x: list, values_y: list, threshold: int) -> list:
     """Go over the sum of every 30 values in the list, and insert to a new list all the sums that are bigger than

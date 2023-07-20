@@ -1,6 +1,6 @@
 import pandas as pd
 from niralysis.jsonOrganizer import process_json_files
-from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps
+from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
 from niralysis.calculate_pairwise_distance import calculate_pairwise_distance
 import pathlib
 
@@ -37,7 +37,7 @@ class Niralysis:
             filtered_key_point_data (pd.DataFrame): filtered data frame containing only the key points given
         """
         # check if key points are valid
-        self.check_key_point_input(key_points)
+        #self.check_key_point_input(key_points)
         # Find the key points in the column headers
 
         columns_to_include = []
@@ -113,13 +113,6 @@ class Niralysis:
         self.data = self.get_csv(path_to_open_pose_output_folder)
         df_extracted = self.extract_key_point(key_points_to_extract)
         df_filtered = Niralysis.filter_confidence(df_extracted)
-        self.change_in_position = Niralysis.calculate_change_in_position_per_frame(df_filtered)
-        self.change_in_distance = Niralysis.calculate_change_in_distance(df_filtered)
-
-    def filter_labels(self):
-        """Filter data using timestamps of motion labels"""
-        pass
-
-    def check_key_point_input(self):
-        """"""
-        pass
+        change_in_position = Niralysis.calculate_change_in_position_per_frame(df_filtered)
+        change_in_distance = Niralysis.calculate_change_in_distance(df_filtered)
+        self.changed_frames = get_table_of_summed_distances_for_kp_over_time(change_in_position, change_in_distance, 50)
