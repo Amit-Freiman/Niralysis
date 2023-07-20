@@ -9,9 +9,26 @@ from snirf import Snirf
 
 class Niralysis:
 
-     ###### Defining snirf's attributes and reading snirf file ######
 
     def __init__(self, snirf_fname: str):
+        """
+    Initialize a Niralysis object with a SNIRF file.
+
+    Parameters:
+        snirf_fname (str): The file path of the SNIRF file.
+
+    Raises:
+        ValueError: If the SNIRF file does not exist or has an invalid extension.
+
+    Attributes:
+        snirf_fname (pathlib.Path): The file path of the SNIRF file.
+        snirf_data (Snirf): The loaded SNIRF data.
+        snirf_sourc_loc (numpy.ndarray): Source optode locations from the SNIRF data.
+        snirf_detc_loc (numpy.ndarray): Detector optode locations from the SNIRF data.
+        old_sourc_loc (numpy.ndarray or None): The original source optode locations.
+        old_detc_loc (numpy.ndarray or None): The original detector optode locations.
+        storm_fname (pathlib.Path or None): The file path of the STORM file, if set.
+    """         
             
         self.snirf_fname = pathlib.Path(snirf_fname)
         if not self.snirf_fname.exists():
@@ -20,19 +37,31 @@ class Niralysis:
         if not str(self.snirf_fname).endswith('.snirf'):
             raise ValueError("Not a snirf file.") 
         
-        #self.read_snirf()
-        
 
         self.old_sourc_loc = None
         self.old_detc_loc = None
         self.storm_fname = None
-    
 
 
-                  
      ###### Read other files ######
 
     def storm(self,storm_fname):
+        """
+    Switching the snirf original probe locations with the STORM probe locations. 
+
+    Parameters:
+        storm_fname (str): The file path of the STORM.txt file.
+
+    Raises:
+        ValueError: If the STORM file does not exist.
+
+    Updates:
+        snirf_detc_loc (numpy.ndarray): Updates the detector optode locations with the STORM data.
+        snirf_sourc_loc (numpy.ndarray): Updates the source optode locations with the STORM data.
+        old_detc_loc (numpy.ndarray): Stores the original detector optode locations if not already stored.
+        old_sourc_loc (numpy.ndarray): Stores the original source optode locations if not already stored.
+    """
+
         data = Snirf(rf'{self.snirf_fname}', 'r+')
         self.snirf_detc_loc = data.nirs[0].probe.detectorPos3D[:,:]
         self.snirf_sourc_loc = data.nirs[0].probe.sourcePos3D[:,:]
@@ -42,6 +71,18 @@ class Niralysis:
 
     
     def set_storm_file(self, storm_fname: str):
+        """   
+    Set the STORM file for STORM analysis.
+
+    Parameters:
+        storm_fname (str): The file path of the STORM.txt file.
+
+    Raises:
+        ValueError: If the STORM.txt file does not exist.
+
+    Updates:
+        storm_fname (pathlib.Path): The file path of the STORM.txt file."""
+        
         self.storm_fname = pathlib.Path(storm_fname)
         if not self.storm_fname.exists():
             raise ValueError("storm file not found!")
@@ -49,9 +90,17 @@ class Niralysis:
     
     
     def read_storm_to_DF(storm_fname):
-        """Reads the txt file located in self.data_fname, to
-        the attribute self.data.
-        """
+        """ 
+    Read the STORM data from the provided STORM.txt file and return it as a pandas DataFrame.
+
+    Parameters:
+        storm_fname (str): The file path of the STORM.txt file.
+
+    Raises:
+        ValueError: If the STORM file path is None.
+
+    Returns:
+        pd.DataFrame: The STORM data loaded from the file."""
         if storm_fname is None:
             raise ValueError("No storm file set. Use 'set_storm_file' to provide a file path.")
         
@@ -76,6 +125,22 @@ class Niralysis:
     
 
     def snirf_with_storm_prob(self,data):
+
+        """
+    Update the SNIRF data with STORM optode locations and save the modified data back to the original SNIRF file.
+
+    Parameters:
+        data (Snirf): The SNIRF data to be updated with STORM optode locations.
+
+    Raises:
+        ValueError: If there is an issue with the STORM data or SNIRF data.
+
+    Updates:
+        snirf_detc_loc (numpy.ndarray): Updates the detector optode locations with the STORM data.
+        snirf_sourc_loc (numpy.ndarray): Updates the source optode locations with the STORM data.
+        old_detc_loc (numpy.ndarray): Stores the original detector optode locations if not already stored.
+        old_sourc_loc (numpy.ndarray): Stores the original source optode locations if not already stored."""
+        
         storm_sourc_loc, storm_detc_loc = self.storm_prob()
 
         # Store the old optode locations if not already stored
@@ -102,7 +167,11 @@ class Niralysis:
 
 
     def get_old_probe_locations(self):
-        """Returns the old probe locations."""
+        """    
+    Get the original probe locations before updating with STORM data.
+
+    Returns:
+        Tuple[numpy.ndarray or None, numpy.ndarray or None]: A tuple containing the original source and detector optode locations."""
         return self.old_sourc_loc, self.old_detc_loc
     
 
