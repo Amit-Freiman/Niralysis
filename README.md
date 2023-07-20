@@ -45,10 +45,8 @@
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -65,7 +63,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-
 NIRalysis - A Python Package for fNIRS Data Analysis and Probe Location Augmentation
 
 NIRalysis is a Python package designed to facilitate the analysis of functional Near-Infrared Spectroscopy (fNIRS) data. This tool enables the processing of fNIRS output files, known as "snirf" files, while enhancing them with precise probe location information obtained from STORM files. By fusing fNIRS data with accurate probe coordinates, NIRalysis provides more accurate and reliable research and insights.
@@ -75,7 +72,6 @@ NIRalysis is a Python package designed to facilitate the analysis of functional 
 
 
 ### Built With
-
 * [![SNIRF][snirf-shield]][snirf-url] # Template for relevant libraries 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
