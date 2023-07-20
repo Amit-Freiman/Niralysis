@@ -221,10 +221,9 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [license-url]: https://github.com/Amit-Freiman/Niralysis/blob/main/LICENSE
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
-[STORM-shield]: https://img.shields.io/github/yoterel/STORM-Net.svg?style=for-the-badge
+[STORM-shield]: https://img.shields.io/badge/STORM-F2BB30
 [STORM-url]: https://github.com/yoterel/STORM-Net
-[OpenPose-shield]: https://img.shields.io/github/CMU-Perceptual-Computing-Lab/openpose.svg?style=for-the-badge
+[OpenPose-shield]:https://img.shields.io/badge/OpenPose-35668F
 [OpenPose-url]: https://github.com/CMU-Perceptual-Computing-Lab/openpose
-[snirf-shield]: https://img.shields.io/github/fNIRS/snirf.svg?style=for-the-badge
+[snirf-shield]: https://img.shields.io/badge/snirf-F2BB30
 [snirf-url]: https://github.com/fNIRS/snirf
-
