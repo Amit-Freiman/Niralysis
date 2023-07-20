@@ -65,7 +65,7 @@
 
 NIRalysis - A Python Package for fNIRS Data Analysis and Probe Location Augmentation
 
-NIRalysis is a Python package designed to facilitate the analysis of functional Near-Infrared Spectroscopy (fNIRS) data. This tool enables the processing of fNIRS output files, known as "snirf" files, while enhancing them with precise probe location information obtained from STORM files. By fusing fNIRS data with accurate probe coordinates, NIRalysis provides more accurate and reliable research and insights.
+NIRalysis is a Python package designed to facilitate the analysis of functional Near-Infrared Spectroscopy (fNIRS) data. This tool enables the processing of fNIRS output files, known as "snirf" files, while enhancing them with precise probe location information obtained from STORM files.  NIRalysis also takes OpenPose data which detect human body, hand, facial, and foot keypoints out of video footage and integrate the information with snirf data. By fusing fNIRS data with accurate probe coordinates, NIRalysis provides more accurate and reliable research and insights.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

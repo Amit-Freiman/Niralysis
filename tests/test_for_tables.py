@@ -1,10 +1,7 @@
-# test_niralysis.py
-
 import pandas as pd
 import pytest
-from niralysis.niralysis import Niralysis
-
-# Define fixtures
+from niralysis.niralysis import *
+# Define fixture
 
 @pytest.fixture
 def example_data():
