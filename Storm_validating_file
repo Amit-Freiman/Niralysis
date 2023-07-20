@@ -1,0 +1,3 @@
+from mne.io import read_raw_snirf
+
+snirf_intensity = read_raw_snirf('nback.snirf')

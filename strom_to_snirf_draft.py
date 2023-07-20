@@ -3,10 +3,13 @@ import pathlib
 import numpy as np
 from typing import Union
 import re
-import mne
+from snirf import Snirf
+# from mne.io import read_raw_snirf
 
 
 class Niralysis:
+
+     ###### Defining snirf's attributes and reading snirf file ######
 
     def __init__(self, snirf_fname: str):
             
@@ -18,16 +21,19 @@ class Niralysis:
             raise ValueError("Not a snirf file.") 
         
         self.read_snirf()
-        self.snirf_dtc_loc = self.snirf_file.nirs[0].probe.detectorPos3D[:,:]
-        self.snirf_src_loc = self.snirf_file.nirs[0].probe.sourcePos3D[:,:]
+        self.snirf_detc_loc = self.snirf_data.nirs[0].probe.detectorPos3D[:,:]
+        self.snirf_sourc_loc = self.snirf_data.nirs[0].probe.sourcePos3D[:,:]
 
+        self.old_sourc_loc = None
+        self.old_detc_loc = None
         self.storm_fname = None
                   
-     ### Read files ###
         
     def read_snirf(self):
-        self.snirf_file = mne.io.read_raw_snirf(self.snirf_fname)
+        self.snirf_data = Snirf(rf'{self.snirf_fname}', 'r+')
 
+
+     ###### Read other files ######
 
     def set_storm_file(self, storm_fname: str):
         self.storm_fname = pathlib.Path(storm_fname)
@@ -47,50 +53,89 @@ class Niralysis:
         return self.storm_data
     
 
-    ### Processing STORM file ###
+    ###### Processing STORM file ######
 
     def storm_prob(self):
+        ### need to add validation: if there isn't "s" or "d" indexes
+
         storm_data = self.read_storm_to_DF()
-        storm_src = storm_data[storm_data.index.astype(str).str.contains(r'^s\d+$')]
-        storm_dtc = storm_data[storm_data.index.astype(str).str.contains(r'^d\d+$')]
-        return storm_src, storm_dtc
+        storm_sourc_loc = storm_data[storm_data.index.astype(str).str.contains(r'^s\d+$')]
+        storm_detc_loc = storm_data[storm_data.index.astype(str).str.contains(r'^d\d+$')]
+        
+        if len(storm_sourc_loc) == 0 or len(storm_detc_loc) == 0:
+            raise ValueError("Invalid STORM data. Check your STORM file.")
+
+
+        return storm_sourc_loc, storm_detc_loc
     
 
+    
+    
     def snirf_with_storm_prob(self):
-        snirf_file_copy = self.snirf_file.copy()
-        self.snirf_file.close()
-        storm_src, storm_dtc = self.storm_prob()
-        snirf_file_copy.nirs[0].probe.sourcePos3D[:, :] = storm_src[:, :]
-        snirf_file_copy.nirs[0].probe.detectorPos3D[:, :] = storm_dtc[:, :]
-        snirf_file_copy.save()
-        return snirf_file_copy
-       
+        storm_sourc_loc, storm_detc_loc = self.storm_prob()
 
-    def is_same_dim(self):
-        num_snirf_src_loc = np.shape(self.snirf_src_loc)[0]
-        num_snirf_dtc_loc = np.shape(self.snirf_dtc_loc)[0]
-        num_storm_dtc = 23
-        num_storm_src = 16
-        if num_snirf_src_loc !=num_storm_src or num_snirf_dtc_loc !=num_storm_dtc:
+        # Store the old optode locations
+        self.old_sourc_loc = np.copy(self.snirf_data.nirs[0].probe.sourcePos3D)
+        self.old_detc_loc = np.copy(self.snirf_data.nirs[0].probe.detectorPos3D)
+
+        # Update the SNIRF file with the STORM data
+        self.snirf_data.nirs[0].probe.sourcePos3D[:, :] = storm_sourc_loc
+        self.snirf_data.nirs[0].probe.detectorPos3D[:, :] = storm_detc_loc
+
+        return self.snirf_data
+    
+
+    def is_same_dim(self): 
+        #### validate if the number of the optodes is the same between the storm and the snirf files ###
+        num_snirf_sourc = np.shape(self.snirf_sourc_loc)[0]
+        num_snirf_detc = np.shape(self.snirf_detc_loc)[0]
+        storm_sourc_loc, storm_detc_loc = self.storm_prob()
+        num_storm_sourc = np.shape(storm_sourc_loc)
+        num_storm_detc = np.shape(storm_detc_loc)
+        if num_snirf_sourc !=num_storm_sourc or num_snirf_detc !=num_storm_detc:
             raise ValueError("File does not exsist.")
         
 
+
+#####Testing the code ####
+
+
+# Example usage
+
 file = Niralysis('sub_demo.snirf')
-file.read_snirf()  
 file.set_storm_file('STORM_demo.txt')
+file.read_snirf()
 file.read_storm_to_DF()
-storm_src, storm_dtc = file.storm_prob()
+
+storm_sourc_loc, storm_detc_loc = file.storm_prob()
 print("Storm Source Positions:")
-print(storm_src)
+print(storm_sourc_loc)
 print("\nStorm Detector Positions:")
-print(storm_dtc)
+print(storm_detc_loc)
 
-new = file.snirf_with_storm_prob()
-print("\nModified Detector Positions in New Snirf File:")
-print(new.nirs[0].probe.detectorPos3D[:, :])
+# Call the method to update SNIRF file with STORM data
+file.snirf_with_storm_prob()
 
 
-    
+# Access new optode location in a snirf file
+new_snirf_source_loc = file.snirf_sourc_loc
+new_snirf_detector_loc = file.snirf_detc_loc
+print("\nNew Source Locations in snirf file:")
+print(new_snirf_source_loc)
+print("\nNew Detector Locations in snirf file:")
+print(new_snirf_detector_loc)
+
+
+# Access old optode locations
+old_source_locations = file.old_sourc_loc
+old_detector_locations = file.old_detc_loc
+
+print("\nOld Source Locations:")
+print(old_source_locations)
+print("\nOld Detector Locations:")
+print(old_detector_locations)
+
+
 
 
 
