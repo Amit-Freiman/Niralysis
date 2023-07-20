@@ -1,9 +1,11 @@
 import pandas as pd
 import pathlib 
 import numpy as np
-from typing import Union
 import re
 from snirf import Snirf
+import math
+from scipy.spatial import distance
+
 
 
 
@@ -174,9 +176,32 @@ class Niralysis:
         Tuple[numpy.ndarray or None, numpy.ndarray or None]: A tuple containing the original source and detector optode locations."""
         return self.old_sourc_loc, self.old_detc_loc
     
+    def euclidean_dist(storm_loc, snirf_loc, cols=None):
+        return np.linalg.norm(storm_loc - snirf_loc, axis=1)
+    
+    def delta_dist(self, storm_loc, snirf_loc, cols=None, thresh = 30):
+        df_dist = self.euclidean_dist(storm_loc, snirf_loc, cols=None)
+        invalid_prob_indices = []
+        for i, prob in enumerate(df_dist.shape[0]): #looping on the optode rows, adding the indices of invalid optode to a list
+            if prob <=thresh:
+                continue
+            invalid_prob_indices.append(i)
+        invalid_prob = storm_loc[invalid_prob_indices]
+        return invalid_prob
+  
+    def dist_source(self):
+        self.old_sourc_loc = self.get_old_probe_locations()[0]
+        storm_sourc_loc = self.storm_prob()[0]
+        invalid_source = self.delta_dist(self.old_sourc_loc,storm_sourc_loc)
+        return invalid_source
+    
+    def dist_detec(self):
+        self.old_detc_loc = self.get_old_probe_locations()[1]
+        storm_detc_loc = self.storm_prob()[1]
+        invalid_detector = self.delta_dist(self.old_detc_loc,storm_detc_loc)
+        return invalid_detector
 
-
-
+       
 #####Testing the code ####
 
 
