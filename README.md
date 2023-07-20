@@ -78,8 +78,7 @@ NIRalysis is a Python package designed to facilitate the analysis of functional 
 ### Built With
 
 * [![Next][Next.js]][Next-url] # Template for relevant libraries 
-* [![SNIRF][Next.js]][Next-url] # Template for relevant libraries 
-ADD MAJOR LIBRARIES/FRAMEWORKS (check option to drop whole section)
+* [![SNIRF][snirf-shield]][snirf-url] # Template for relevant libraries 
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -97,11 +96,6 @@ Our package code facilitates the processing of output files containing the follo
 
 * [![STORM][STORM-shield]][STORM-url]
 * [![OpenPose][OpenPose-shield]][OpenPose-url]
-
-  openpose
-  ```sh
-  CHANGE TO OpenPose link? 
-  ```
 
 ### Installation
 
@@ -231,4 +225,6 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [STORM-url]: https://github.com/yoterel/STORM-Net
 [OpenPose-shield]: https://img.shields.io/github/CMU-Perceptual-Computing-Lab/openpose.svg?style=for-the-badge
 [OpenPose-url]: https://github.com/CMU-Perceptual-Computing-Lab/openpose
+[snirf-shield]: https://img.shields.io/github/fNIRS/snirf.svg?style=for-the-badge
+[snirf-url]: https://github.com/fNIRS/snirf
 
