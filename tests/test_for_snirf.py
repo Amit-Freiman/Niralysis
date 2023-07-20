@@ -1,10 +1,10 @@
 import pathlib
 import pytest
 import pandas as pd
+from niralysis.niralysis import *
 
-from strom_to_snirf_draft import *
 
-"creating changes to merge"
+"""testing file object"""
 def test_valid_input():
     """Testing if the file name as a path is valid """
     fname = pathlib.Path(__file__) 
