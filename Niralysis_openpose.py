@@ -85,7 +85,6 @@ class Niralysis:
         """"""
         change_in_position_table = get_table_of_deltas_between_time_stamps_in_all_kps(data)
         return change_in_position_table
-        
 
     def generate_motion_labels_by_change(self):
         """Generate motion labels per time stamp according to change in x and y coordinates"""

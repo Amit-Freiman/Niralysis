@@ -50,3 +50,101 @@ def get_table_of_deltas_between_time_stamps_in_all_kps(x_y_data: pd.DataFrame) -
                 deltas.at[time_stamp, kp] = 0
                 counter_of_zeros_in_a_row = 1
     return deltas
+
+
+def get_table_of_summed_distances_for_kp_over_time(deltas_table: pd.DataFrame, threshold: int) -> pd.DataFrame:
+    """Calculate the summed distance of a key point over time
+    Sums the deltas in the nose kp, until sum reaches the threshold.
+    When sum reaches threshold, sums the deltas in the corresponding rows for every kp in table.
+
+    Args:
+        deltas_table (pd.DataFrame): data frame of deltas between each 2 consecutive time stamps (0-1, 1-2, 2-3, etc.)
+                                        Each row corresponds to the difference between two consecutive time stamps.
+        threshold (float): threshold of summed distance of nose kp over time
+    Returns:
+        sums (pd.DataFrame): Data frame of summed distances of every kp over time.
+                            Each row corresponds to the summed distance of every kp over time
+                            until threshold is reached.
+
+    Algorithm:
+    1. Use get_start_to_end_list function to get a list of starting and ending time stamps of every sum that passes
+        the threshold.
+    2. According to the list, sum all columns values in this range of start-end for every kp using sum_all_kp_for_range
+        function. For every kp, add the sum to the sums table.
+    """
+    sums = pd.DataFrame(columns=deltas_table.columns)
+    nose_columns_names = ["KP_0_x", "KP_0_y"]
+
+    nose_x_list = list(deltas_table[nose_columns_names[0]])
+    nose_y_list = list(deltas_table[nose_columns_names[1]])
+    start_to_end_locations_tuple_list = get_start_to_end_list(nose_x_list, nose_y_list, threshold)
+    sums["timestamps"] = create_timestamps_column(start_to_end_locations_tuple_list)
+
+    for kp in deltas_table.columns:
+        column_of_sums_per_kb = create_column_of_sum_for_kp_in_range(deltas_table[kp], start_to_end_locations_tuple_list)
+        sums[kp] = column_of_sums_per_kb
+    return sums
+
+
+def create_timestamps_column(start_to_end_locations_tuple_list: list) -> pd.DataFrame:
+    """Creates a column of the start and end locations of the sums.
+    Args:
+        start_to_end_locations_tuple_list (list): list of tuples of start and end locations of sums.
+    Returns:
+        timestamps_column (pd.DataFrame): a data frame with a column of the start and end locations of the sums."""
+    timestamps_column = pd.DataFrame(columns=["timestamps"])
+    for i, j in start_to_end_locations_tuple_list:
+        timestamps_column.at[i, "timestamps"] = f"{i}-{j}"
+    return timestamps_column
+
+
+def create_column_of_sum_for_kp_in_range(delta_kp_column: pd.DataFrame, ranges: list) -> pd.DataFrame:
+    """Sums the values in the range of every tuple in the list, and returns a data frame column of the sums.
+    Args:
+        delta_kp_column (pd.DataFrame): a column of the deltas of a kp
+        ranges (list): a list of tuples of start and end locations of sums.
+    Returns:
+        sum_rows (pd.DataFrame): a data frame with a column of the sums of the kp in the ranges."""
+    sum_rows = pd.DataFrame(columns=["sums"])
+    for i, j in ranges:
+        sum_rows.at[i, "sums"] = delta_kp_column[i:j].sum()
+    return sum_rows
+
+
+def get_start_to_end_list(values_x: list, values_y: list, threshold: int) -> list:
+    """Go over the sum of every 30 values in the list, and insert to a new list all the sums that are bigger than
+    threshold.
+
+    Args:
+        values_x (list): list of values in x
+        values_y (list): list of values in y
+        threshold (int): threshold of summed distance of nose kp over time
+
+    returns:
+    start_to_end_locations_tuple_list: a list of tuples of start and end locations of sums that are bigger than
+    threshold"""
+    start_to_end_locations_tuple_list = []
+    for i in range(len(values_x)):
+        for j in range(30):
+            if sum(values_x[i:i+j]) > threshold or sum(values_y[i:i+j]) > threshold:
+                start_to_end_locations_tuple_list.append((i, i+j))
+    return start_to_end_locations_tuple_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
