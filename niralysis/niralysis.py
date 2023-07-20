@@ -17,9 +17,33 @@ class Niralysis:
 
     Parameters:
         snirf_fname (str): The file path of the SNIRF file.
-
-    Raises:
-        ValueError: If the SNIRF file does not exist or has an invalid extension.
+    
+    Methods:
+        storm: Update SNIRF probe locations with STORM data.
+            Functions and methods used in storm:
+                set_storm_file: Set the STORM file for STORM analysis.
+                read_storm_to_DF: Read the STORM data from the provided STORM.txt file and return it as a pandas DataFrame.
+                storm_prob: Extract the STORM source and detector optode locations from the STORM data.
+                is_storm_valid: Validate the STORM data to ensure it contains valid source and detector optode locations.
+                snirf_with_storm_prob: Update the SNIRF data with STORM optode locations and save the modified data back to the original SNIRF file.
+                get_old_probe_locations: Get the original probe locations before updating with STORM data.
+        invalid_sourc: Identify the source optode locations that have a Euclidean distance greater than or equal to the specified threshold
+            from the original source optode locations.
+        invalid_detec: Identify the detector optode locations that have a Euclidean distance greater than or equal to the specified threshold
+            from the original detector optode locations.
+            Functions and methods used in invalid_sourc and invalid_detec:
+                euclidean_dist: Calculate the Euclidean distance between the optode locations before and after the STORM data update.
+        
+        generate_open_pose: General function to analyse open pose data for head movements and arm movements and save the results as motion labels with corresponding timestamps.
+            Functions and methods used in generate_open_pose:    
+                get_csv: Convert folder containing json files to csv file.
+                extract_key_point: Extract the data from the data frame, according to the key points given.
+                filter_confidence: Filter data based on confidence, if confidence is less than 0.5 in a specific key point and time frame, then
+                    the data in this time frame is set to 0 so as to exclude it from further analysis.
+                calculate_change_in_distance: Calculate the change in distance between two key points (for all key points).
+                    Then calculate the change between consecutive time frames in the calculated data.
+                calculate_change_in_position_per_frame: Calculate the change in position between consecutive time frames for all key points.
+        
 
     Attributes:
         snirf_fname (pathlib.Path): The file path of the SNIRF file.
@@ -29,6 +53,10 @@ class Niralysis:
         old_detc_loc (numpy.ndarray or None): The original detector optode locations.
         invalid_sourc(numpy.ndarray): the source optode locations that are off-place and invalid.
         invalid_detec(numpy.ndarray):the detector optode locations that are off-place and invalid.
+        data (pd.DataFrame): data frame of the json file combined
+        changed_frames (pd.DataFrame): data frame of the change in distance and position for each keypoint
+            between consecutive time frames for each key point
+        motion_label (pd.DataFrame): data frame of the motion labels for each timestamp
         """ 
 
     FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
@@ -37,15 +65,27 @@ class Niralysis:
 
 
     def __init__(self, snirf_fname: str):
+
+        # check if snirf_fname is a string
+        if type(snirf_fname) != str:
+            raise TypeError("snirf_fname must be a string")
+        # check if snirf_fname is empty
+        if len(snirf_fname) == 0:
+            raise ValueError("snirf_fname cannot be empty")
+        # check if snirf_fname is a path
+        if type(snirf_fname) == pathlib.WindowsPath:
+            snirf_fname = str(snirf_fname)
+        # check if snirf_fname is a snirf file
+        if not snirf_fname.endswith('.snirf'):
+            raise ValueError("Not a snirf file.")
+        # check if snirf_fname exists
+        if not pathlib.Path(snirf_fname).exists():
+            raise ValueError("snirf_fname does not exist")
             
         self.snirf_fname = pathlib.Path(snirf_fname)
-        if not self.snirf_fname.exists():
-            raise ValueError("snirf file does not exsist.") 
-        
-        if not str(self.snirf_fname).endswith('.snirf'):
-            raise ValueError("Not a snirf file.") 
-        
-        
+
+        # Intialized the attributes
+              
         self.old_sourc_loc = None
         self.old_detc_loc = None
         self.storm_fname = None
@@ -69,6 +109,22 @@ class Niralysis:
         old_detc_loc (numpy.ndarray): Stores the original detector optode locations if not already stored.
         old_sourc_loc (numpy.ndarray): Stores the original source optode locations if not already stored.
         """
+        # check if storm_fname is a string
+        if type(storm_fname) != str:
+            raise TypeError("storm_fname must be a string")
+        # check if storm_fname is a path
+        if type(storm_fname) == pathlib.WindowsPath:
+            storm_fname = str(storm_fname)
+        # check if storm_fname is a txt file
+        if not storm_fname.endswith('.txt'):
+            raise ValueError("Not a txt file.")
+        # check if storm_fname exists
+        if not pathlib.Path(storm_fname).exists():
+            raise ValueError("storm_fname does not exist")
+        # check if storm_fname is empty
+        if storm_fname is None:
+            raise ValueError("storm_fname cannot be empty")
+        
         try:
                 data = Snirf(rf'{self.snirf_fname}', 'r+')
                 data_backup = data
@@ -96,52 +152,48 @@ class Niralysis:
             data_backup.save(rf'{self.snirf_fname}')
             print('We took care of it, please try again')
             
-            
-
 
     def set_storm_file(self, storm_fname: str):
         """   
-    Set the STORM file for STORM analysis.
+        Set the STORM file for STORM analysis.
 
-    Parameters:
-        storm_fname (str): The file path of the STORM.txt file.
+        Parameters:
+            storm_fname (str): The file path of the STORM.txt file.
 
-    Raises:
-        ValueError: If the STORM file does not exist.
-        ValueError: If the STORM file is not in a txt format.
-
-
-    Updates:
-        storm_fname (pathlib.Path): The file path of the STORM.txt file.
+        Raises:
+            ValueError: If the STORM file does not exist.
+            ValueError: If the STORM file is not in a txt format.
+            ValueError: If the STORM file is empty.
+            TypeError: If the STORM file is not a string.
+            
+        Updates:
+            storm_fname (pathlib.Path): The file path of the STORM.txt file.
         """
+        # check if storm_fname is empty
+        if storm_fname is None:
+            raise ValueError("storm_fname cannot be empty")
         
         self.storm_fname = pathlib.Path(storm_fname)
-
-        if not self.storm_fname.exists():
-            raise ValueError("storm file not found!")
-        
-        if not str(self.storm_fname).endswith('.txt'):
-            raise ValueError("Not a STORM.txt file.") 
-
         self.storm_data = Niralysis.read_storm_to_DF(storm_fname)
     
     
     def read_storm_to_DF(storm_fname):
         """ 
-    Read the STORM data from the provided STORM.txt file and return it as a pandas DataFrame.
+        Read the STORM data from the provided STORM.txt file and return it as a pandas DataFrame.
 
-    Parameters:
-        storm_fname (str): The file path of the STORM.txt file.
+        Parameters:
+            storm_fname (str): The file path of the STORM.txt file.
 
-    Raises:
-        ValueError: If the STORM file path is None.
+        Raises:
+            ValueError: If the STORM file path is None.
 
-    Returns:
-        pd.DataFrame: The STORM data loaded from the file.
+        Returns:
+            pd.DataFrame: The STORM data loaded from the file.
         """
-
+        # check if storm_fname is empty
         if storm_fname is None:
             raise ValueError("No storm file set. Use 'set_storm_file' to provide a file path.")
+
         
         storm_data = pd.read_csv(storm_fname,delim_whitespace=True, index_col=0, header=None)
         storm_data.index.name = None
@@ -152,13 +204,13 @@ class Niralysis:
 
     def storm_prob(self):
         """
-    Extract the STORM source and detector optode locations from the STORM data.
+        Extract the STORM source and detector optode locations from the STORM data.
 
-    Returns:
-        Tuple[pandas.DataFrame, pandas.DataFrame]: A tuple containing the STORM source and detector optode locations as pandas DataFrames.
+        Returns:
+            Tuple[pandas.DataFrame, pandas.DataFrame]: A tuple containing the STORM source and detector optode locations as pandas DataFrames.
         
-    Raises:
-        ValueError: If the STORM data does not contain valid source or detector optode locations.
+        Raises:
+            ValueError: If the STORM data does not contain valid source or detector optode locations.
         """
 
 
@@ -175,14 +227,14 @@ class Niralysis:
         return storm_sourc_loc, storm_detc_loc
     
 
-    ###### validation STOM file ######
+    ###### validation STORM file ######
 
     def is_storm_valid(self):
         """
-    Validate the STORM data to ensure it contains valid source and detector optode locations.
+        Validate the STORM data to ensure it contains valid source and detector optode locations.
 
-    Raises:
-        ValueError: If the STORM data contains NaN values or any integer columns, or if the number of STORM source or detector optode locations
+        Raises:
+            ValueError: If the STORM data contains NaN values or any integer columns, or if the number of STORM source or detector optode locations
                     does not match the number of optode locations in the SNIRF data."""
         
         # Get the STORM source and detector optode locations
@@ -214,20 +266,27 @@ class Niralysis:
 
     def snirf_with_storm_prob(self,data):
         """
-    Update the SNIRF data with STORM optode locations and save the modified data back to the original SNIRF file.
+        Update the SNIRF data with STORM optode locations and save the modified data back to the original SNIRF file.
 
-    Parameters:
-        data (Snirf): The SNIRF data to be updated with STORM optode locations.
+        Parameters:
+            data (Snirf): The SNIRF data to be updated with STORM optode locations.
 
-    Raises:
-        ValueError: If there is an issue with the STORM data or SNIRF data.
-
-    Updates:
-        snirf_detc_loc (numpy.ndarray): Updates the detector optode locations with the STORM data.
-        snirf_sourc_loc (numpy.ndarray): Updates the source optode locations with the STORM data.
-        old_detc_loc (numpy.ndarray): Stores the original detector optode locations if not already stored.
-        old_sourc_loc (numpy.ndarray): Stores the original source optode locations if not already stored.
+        Updates:
+            data (Snirf): The updated SNIRF data.
         """
+        # Validate the STORM data
+        try:
+            self.is_storm_valid()
+        except ValueError as error:
+            print(error)
+            return
+        # check if data is a Snirf object
+        if type(data) != Snirf:
+            raise TypeError("data must be a Snirf object")
+        # check if data is empty
+        if data is None:
+            raise ValueError("data cannot be empty")
+
         
         storm_sourc_loc, storm_detc_loc = self.storm_prob()
 
@@ -248,10 +307,10 @@ class Niralysis:
         
     def get_old_probe_locations(self):
         """    
-    Get the original probe locations before updating with STORM data.
+        Get the original probe locations before updating with STORM data.
 
-    Returns:
-        Tuple[numpy.ndarray or None, numpy.ndarray or None]: A tuple containing the original source and detector optode locations.
+        Returns:
+            Tuple[numpy.ndarray or None, numpy.ndarray or None]: A tuple containing the original source and detector optode locations.
         """
 
         return self.old_sourc_loc, self.old_detc_loc
@@ -259,11 +318,11 @@ class Niralysis:
 
     def euclidean_dist(self):
         """
-    Calculate the Euclidean distance between the optode locations before and after the STORM data update.
+        Calculate the Euclidean distance between the optode locations before and after the STORM data update.
 
-    Returns:
-        Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the Euclidean distances between the updated and original
-                                            source optode locations and the updated and original detector optode locations."""
+        Returns:
+            Tuple[numpy.ndarray, numpy.ndarray]: A tuple containing the Euclidean distances between the updated and original
+                source optode locations and the updated and original detector optode locations."""
         
         # Retrieve the original source and detector optode locations
         self.old_sourc_loc, self.old_detc_loc = self.get_old_probe_locations()
@@ -278,18 +337,27 @@ class Niralysis:
         return sourc_euclidean_dist, detc_euclidean_dist
 
     
-    def invalid_sourc(self,thresh=20):
+    def invalid_sourc(self,thresh : int = 20):
         """
-    Identify the source optode locations that have a Euclidean distance greater than or equal to the specified threshold
-    from the original source optode locations.
+        Identify the source optode locations that have a Euclidean distance greater than or equal to the specified threshold
+        from the original source optode locations.
 
-    Parameters:
-        thresh (float): The threshold value for the Euclidean distance. Default is set to 20 mm.
+        Parameters:
+            thresh (float): The threshold value for the Euclidean distance. Default is set to 20 mm.
 
-    Returns:
+        Returns:
             numpy.ndarray: A NumPy array containing the source optode locations that crossed the Euclidean distance threshold, and therefore are off-place and invalid.
             """
-        
+        # check if thresh is an integer
+        if type(thresh) != int:
+            raise TypeError("thresh must be an integer")
+        # check if thresh is positive
+        if thresh < 0:
+            raise ValueError("thresh must be a positive integer")
+        # check if thresh is greater than 30 (the maximum distance between two optodes) if so, give a warning
+        if thresh > 30:
+            print("Warning: thresh is greater than 30 mm. This is the maximum distance between two adjacent optodes. Please check your input.")
+
         # Obtain the STORM source optode locations and the Euclidean distances
         storm_sourc_loc = self.storm_prob()[0]
         sourc_euclidean_dist = self.euclidean_dist()[0]
@@ -301,18 +369,28 @@ class Niralysis:
         return invalid_sourc
     
 
-    def invalid_detec(self,thresh=20):
+    def invalid_detec(self,thresh : int = 20):
         """
-    Identify the detector optode locations that have a Euclidean distance greater than or equal to the specified threshold
-    from the original detector optode locations.
+        Identify the detector optode locations that have a Euclidean distance greater than or equal to the specified threshold
+        from the original detector optode locations.
 
-    Parameters:
-        thresh (float): The threshold value for the Euclidean distance. Default is set to 10.
+        Parameters:
+            thresh (float): The threshold value for the Euclidean distance. Default is set to 10.
 
-    Returns:
-        numpy.ndarray: A NumPy array containing the detector optode locations that crossed the Euclidean distance threshold, and therefore are off-place and invalid.
+        Returns:
+            numpy.ndarray: A NumPy array containing the detector optode locations that crossed the Euclidean
+              distance threshold, and are therefore off-place and invalid.
         """
-
+        # check if thresh is an integer
+        if type(thresh) != int:
+            raise TypeError("thresh must be an integer")
+        # check if thresh is positive
+        if thresh < 0:
+            raise ValueError("thresh must be a positive integer")
+        # check if thresh is greater than 30 (the maximum distance between two optodes) if so, give a warning
+        if thresh > 30:
+            print("Warning: thresh is greater than 30 mm. This is the maximum distance between two adjacent optodes. Please check your input.")
+        
         # Obtain the STORM detector optode locations and the Euclidean distances
         storm_detc_loc = self.storm_prob()[1]
         detc_euclidean_dist = self.euclidean_dist()[1]
@@ -326,16 +404,25 @@ class Niralysis:
     ######## Openpose ########
     
     def get_csv(self, json_folder):
-
         """
-        Convert json to csv
+        Convert folder containing json files to csv file.
 
         Args:
             json_folder (str): path to folder cotaining all json files of the recording
             
         Returns:
-            data (pd.DataFrame): data frame of the json file combined
+            data (pd.DataFrame): data frame of the json files combined and organized
             """
+        # check if json_folder is a string
+        if type(json_folder) != str:
+            raise TypeError("json_folder must be a string")
+        # check if json_folder is empty
+        if len(json_folder) == 0:
+            raise ValueError("json_folder cannot be empty")
+        # check if json_folder is a path
+        if type(json_folder) == pathlib.WindowsPath:
+            json_folder = str(json_folder)
+        
         return process_json_files(json_folder)
 
     def extract_key_point(self, key_points: list) -> pd.DataFrame:
@@ -350,8 +437,21 @@ class Niralysis:
             filtered_key_point_data (pd.DataFrame): filtered data frame containing only the key points given
             """
 
-        # check if key points are valid
-        #self.check_key_point_input(key_points)
+        # check if key_points is a list
+        if type(key_points) != list:
+            raise TypeError("key_points must be a list")
+        # check if key_points is empty
+        if len(key_points) == 0:
+            raise ValueError("key_points cannot be empty")
+        # check if key_points contains only integers
+        for key_point in key_points:
+            if type(key_point) != int:
+                raise TypeError("key_points must contain only integers")
+        # check if key_points contains only integers between 0 and 24
+        for key_point in key_points:
+            if key_point < 0 or key_point > 24:
+                raise ValueError("key_points must contain only integers between 0 and 24")
+        
         # Find the key points in the column headers
 
         columns_to_include = []
@@ -367,16 +467,31 @@ class Niralysis:
     def filter_confidence(filtered_key_point_data, confidence_threshold: float = 0.5):
 
         """
-        Filter data based on confidence, if confidence  rmdir /s /q E:\testis less than 0.5 in a specific key point and time frame, then
-        the data in this time frame is set to 0.
+        Filter data based on confidence, if confidence is less than 0.5 in a specific key point and time frame, then
+        the data in this time frame is set to 0 so as to exclude it from further analysis. 
+        If you wish to include all data, set confidence_threshold to 0.
 
         The columns are organized as follows: KP_1_x, KP_1_y, KP_1_confidence, KP_2_x, KP_2_y, KP_2_confidence, etc.
 
         Args:
-            confidence_threshold (float): confidence threshold
+            confidence_threshold (float): confidence threshold (default = 0.5) 
+                defining the minimum confidence required for the data to be included in the analysis
             """
         
-        # Add case if filtered_key_point_data is the same as self.data
+        #### Add case if filtered_key_point_data is the same as self.data
+        # check if confidence_threshold is a float
+        if type(confidence_threshold) != float:
+            raise TypeError("confidence_threshold must be a float")
+        # check if confidence_threshold is between 0 and 1
+        if confidence_threshold < 0 or confidence_threshold > 1:
+            raise ValueError("confidence_threshold must be between 0 and 1")
+        # check if filtered_key_point_data is a pandas DataFrame
+        if type(filtered_key_point_data) != pd.DataFrame:
+            raise TypeError("filtered_key_point_data must be a pandas DataFrame")
+        # check if filtered_key_point_data is empty
+        if filtered_key_point_data.empty:
+            raise ValueError("filtered_key_point_data cannot be empty")
+        
         for column in filtered_key_point_data.columns:
             if "confidence" in column:
                 for index, confidence_per_time_stamp in enumerate(filtered_key_point_data[column]):
@@ -396,15 +511,22 @@ class Niralysis:
 
     def calculate_change_in_distance(data):
         """    
-    Calculate the change in distance between consecutive time frames in the given data.
+        Calculate the change in distance between two key points (for all key points).
+        Then calculate the change between consecutive time frames in the calculated data.
 
-    Parameters:
-        data (pd.DataFrame): The input data containing key points' coordinates at different time frames.
+        Parameters:
+            data (pd.DataFrame): The input data containing key points' coordinates at different time frames.
 
-    Returns:
-        pd.DataFrame: A DataFrame containing the change in distance between consecutive time frames for each key point.
+        Returns:
+            pd.DataFrame: A DataFrame containing the change in distance between consecutive time frames for each pair of key points.
         """
-
+        # check if data is empty
+        if data.empty:
+            raise ValueError("data cannot be empty")
+        # check if data is a pandas DataFrame
+        if type(data) != pd.DataFrame:
+            raise TypeError("data must be a pandas DataFrame")
+        
         distance_table = calculate_pairwise_distance(data)
         change_in_distance_table = Niralysis.calculate_change_in_position_per_frame(distance_table)
         return change_in_distance_table
@@ -412,26 +534,33 @@ class Niralysis:
 
     def calculate_change_in_position_per_frame(data):
         """    
-    Calculate the change in position between consecutive time frames for all key points.
+        Calculate the change in position between consecutive time frames for all key points.
 
-    Parameters:
-        data (pd.DataFrame): The input data containing key points' coordinates at different time frames.
+        Parameters:
+            data (pd.DataFrame): The input data containing key points' coordinates at different time frames.
 
-    Returns:
-        pd.DataFrame: A DataFrame containing the change in position between consecutive time frames for all key points.
+        Returns:
+            pd.DataFrame: A DataFrame containing the change in position between consecutive time frames for all key points.
         """
-
+        # check if data is empty
+        if data.empty:
+            raise ValueError("data cannot be empty")
+        # check if data is a pandas DataFrame
+        if type(data) != pd.DataFrame:
+            raise TypeError("data must be a pandas DataFrame")
+        
         change_in_position_table = get_table_of_deltas_between_time_stamps_in_all_kps(data)
         return change_in_position_table
 
     def generate_open_pose(self, path_to_open_pose_output_folder: str, key_points_to_extract: int = 0, beginning_of_recording: int = 0):
 
         """
-        Generates attribute file.motionlabels (Timestamps for certain motion labels from video).
+        General function to analyse open pose data for head movements and arm movements
+        and save the results as motion labels with corresponding timestamps. 
 
         Args:
             path_to_open_pose_output_folder (str): path to open pose output folder (folder containing all json files)
-            beginning_of_recording (list): starting time of the recording to transform the timestamps (as frames) to seconds
+            beginning_of_recording (int): starting time of the recording to transform the timestamps (as frames) to seconds
             key_points_to_extract (list): 0 (defualt) to extract only head key points, 1 to extract head and arms key points
 
         Adds to self:
@@ -449,6 +578,11 @@ class Niralysis:
             path_to_open_pose_output_folder = str(path_to_open_pose_output_folder)
         if type(path_to_open_pose_output_folder) != str:
             raise TypeError("path_to_open_pose_output_folder must be a string")
+        if type(beginning_of_recording) != int:
+            raise TypeError("beginning_of_recording must be an integer (time in seconds)")
+        if beginning_of_recording < 0:
+            raise ValueError("beginning_of_recording must be a positive integer")
+        
         if key_points_to_extract == 0:
             key_points_to_extract = Niralysis.HEAD_KP
         else:
@@ -461,13 +595,6 @@ class Niralysis:
         self.changed_frames = get_table_of_summed_distances_for_kp_over_time(change_in_position, change_in_distance, 50)
         self.motion_label = events_to_labels(self.changed_frames)
 
-
-#####Testing the code ####
-
-
-
-# head = Niralysis('sub_demo.snirf')
-# head.storm('STORM_demo.txt')
 
 
 

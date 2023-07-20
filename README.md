@@ -99,13 +99,15 @@ file = niralysis('path to .snirf file')
 
 # Replaces probe_location variable in .snirf file with digitized locations from STORM input
 file.storm('path to STORM file')
-# Provide a list of sources that are off-temaplate by deafult threshold of 20mm.
-file.invalidsource(Threshold)
-# Provide a list of detectors that are off-temaplate by deafult threshold of 20mm.
-file.invaliddetector(Threshold)
+# Provide a list of sources that are off-temaplate by default threshold of 20mm.
+file.invalid_sourc(Threshold)
+# Provide a list of detectors that are off-temaplate by default threshold of 20mm.
+file.invalid_detec(Threshold)
 
 # Generates attributes: 
-# data (Raw data combined from json files), changed_frames (Timestampsand the changes in keypoints) and motion_label (Timestamps for a given label)
+# data (Raw data combined from json files)
+# changed_frames (Timestampsand the changes in keypoints)
+# motion_label (Timestamps for a given label)
 file.generate_open_pose('path to openpose output folder')
 
 ```
