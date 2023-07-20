@@ -14,18 +14,23 @@
   <p align="center">
     An extensive library for dealing with fNIRS data anylsis.
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Amit-Freiman/Niralysis"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://github.com/Amit-Freiman/Niralysis">View Demo</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/Amit-Freiman/Niralysis/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+    <a href="https://github.com/Amit-Freiman/Niralysis/issues">Request Feature</a>
   </p>
 </div>
 
+<!-- PROJECT SHIELDS -->
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -77,12 +82,7 @@ ADD MAJOR LIBRARIES/FRAMEWORKS (check option to drop whole section)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- PROJECT SHIELDS -->
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 
 <!-- GETTING STARTED -->
 ## Getting Started
