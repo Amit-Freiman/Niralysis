@@ -14,19 +14,26 @@
   <p align="center">
     An extensive library for dealing with fNIRS data anylsis.
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Amit-Freiman/Niralysis"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://github.com/Amit-Freiman/Niralysis">View Demo</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/Amit-Freiman/Niralysis/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+    <a href="https://github.com/Amit-Freiman/Niralysis/issues">Request Feature</a>
   </p>
 </div>
 
+<div align="center">
 
+<!-- PROJECT SHIELDS -->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
+</div>
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -71,18 +78,12 @@ NIRalysis is a Python package designed to facilitate the analysis of functional 
 ### Built With
 
 * [![Next][Next.js]][Next-url] # Template for relevant libraries 
-
-ADD MAJOR LIBRARIES/FRAMEWORKS (check option to drop whole section)
+* [![SNIRF][snirf-shield]][snirf-url] # Template for relevant libraries 
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- PROJECT SHIELDS -->
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -91,15 +92,10 @@ This is an example of how you may give instructions on setting up your project l
 To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
+Our package code facilitates the processing of output files containing the following application. These application are integral components of the package, which can be either downloaded or utilized in conjunction with their respective output files.
 
-* STORM
-  ```sh
-  CHANGE TO STORM installation?
-  ```
-  openpose
-  ```sh
-  CHANGE TO OpenPose link? 
-  ```
+* [![STORM][STORM-shield]][STORM-url]
+* [![OpenPose][OpenPose-shield]][OpenPose-url]
 
 ### Installation
 
@@ -225,3 +221,9 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [license-url]: https://github.com/Amit-Freiman/Niralysis/blob/main/LICENSE
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
+[STORM-shield]: https://img.shields.io/badge/STORM-F2BB30
+[STORM-url]: https://github.com/yoterel/STORM-Net
+[OpenPose-shield]:https://img.shields.io/badge/OpenPose-35668F
+[OpenPose-url]: https://github.com/CMU-Perceptual-Computing-Lab/openpose
+[snirf-shield]: https://img.shields.io/badge/snirf-F2BB30
+[snirf-url]: https://github.com/fNIRS/snirf
