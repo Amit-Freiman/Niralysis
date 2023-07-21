@@ -92,13 +92,14 @@ class Niralysis:
         
     ######## STORM ########
 
-    def storm(self,storm_fname):
+    def storm(self,storm_fname,user_input : int = 0):
         """
     Update SNIRF probe locations with STORM data.
     If the STORM data is valid and the update is successful, the method prints a confirmation message.
 
     Parameters:
         storm_fname (str): The file path of the STORM.txt file.
+        user_input (int): The user can choose to view the updated source and detector optode locations or they can skip the preview . Default is set to 0.
 
     Raises:
         ValueError: If the STORM file does not exist.
@@ -124,7 +125,16 @@ class Niralysis:
         # check if storm_fname is empty
         if storm_fname is None:
             raise ValueError("storm_fname cannot be empty")
-        
+        # check if user_input is an integer
+        if type(user_input) != int:
+            raise TypeError("user_input must be an integer")
+        # check if user_input is 0 or 1
+        if user_input != 0 and user_input != 1:
+            raise ValueError("user_input must be either 0 or 1")
+        # check if user_input is empty
+        if user_input is None:
+            raise ValueError("user_input cannot be empty")
+       
         try:
                 data = Snirf(rf'{self.snirf_fname}', 'r+')
                 data_backup = data
@@ -135,9 +145,6 @@ class Niralysis:
 
                 print("Your snirf file has been updated.")
 
-                #The user can choose to view the updated source and detector optode locations or they can skip the preview .
-
-                user_input = input("If you want to see the updated sources and detectors locations, press 1. Else, press 0")
                 if user_input == str(1):
                     place = Snirf(rf'{self.snirf_fname}', 'r+')
                     print("The updated sourcs' locaions: \n")
@@ -164,11 +171,23 @@ class Niralysis:
             ValueError: If the STORM file does not exist.
             ValueError: If the STORM file is not in a txt format.
             ValueError: If the STORM file is empty.
-            TypeError: If the STORM file is not a string.
+            TypeError: If the STORM file is not a string or path Object.
             
         Updates:
             storm_fname (pathlib.Path): The file path of the STORM.txt file.
         """
+        # check if storm_fname is a path
+        if type(storm_fname) == pathlib.WindowsPath:
+            storm_fname = str(storm_fname)
+        # check if storm_fname is a string
+        if type(storm_fname) != str:
+            raise TypeError("storm_fname must be a string")
+        # check if storm_fname is a txt file
+        if not storm_fname.endswith('.txt'):
+            raise ValueError("Not a txt file.")
+        # check if storm_fname exists
+        if not pathlib.Path(storm_fname).exists():
+            raise ValueError("storm_fname does not exist")
         # check if storm_fname is empty
         if storm_fname is None:
             raise ValueError("storm_fname cannot be empty")
@@ -185,14 +204,29 @@ class Niralysis:
             storm_fname (str): The file path of the STORM.txt file.
 
         Raises:
-            ValueError: If the STORM file path is None.
+            ValueError: If the STORM file does not exist.
+            ValueError: If the STORM file is not in a txt format.
+            ValueError: If the STORM file is empty.
+            TypeError: If the STORM file is not a string or Path object.
 
         Returns:
             pd.DataFrame: The STORM data loaded from the file.
         """
+        # check if storm_fname is a path
+        if type(storm_fname) == pathlib.WindowsPath:
+            storm_fname = str(storm_fname)
+        # check if storm_fname is a string
+        if type(storm_fname) != str:
+            raise TypeError("storm_fname must be a string")
+        # check if storm_fname is a txt file
+        if not storm_fname.endswith('.txt'):
+            raise ValueError("Not a txt file.")
+        # check if storm_fname exists
+        if not pathlib.Path(storm_fname).exists():
+            raise ValueError("storm_fname does not exist")
         # check if storm_fname is empty
         if storm_fname is None:
-            raise ValueError("No storm file set. Use 'set_storm_file' to provide a file path.")
+            raise ValueError("storm_fname cannot be empty")
 
         
         storm_data = pd.read_csv(storm_fname,delim_whitespace=True, index_col=0, header=None)
