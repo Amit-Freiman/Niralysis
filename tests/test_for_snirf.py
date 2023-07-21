@@ -7,15 +7,15 @@ from niralysis.niralysis import *
 """testing file object"""
 def test_valid_input():
     """Testing if the file name as a path is valid """
-    fname = pathlib.Path(__file__) 
+    fname = pathlib.Path("demo_data/60_001.snirf") 
     q = Niralysis(fname)
     assert fname == q.snirf_fname
 
 
 def test_str_input():
     """Testing if the file name as a string is valid """
-    q = Niralysis(__file__)
-    assert pathlib.Path(__file__) == q.snirf_fname
+    q = Niralysis("demo_data/60_001.snirf")
+    assert pathlib.Path("demo_data/60_001.snirf") == q.snirf_fname
 
 
 def test_not_snirf_input():
@@ -37,4 +37,5 @@ def test_wrong_input_type():
     fname = 2
     with pytest.raises(TypeError):
         q = Niralysis(pathlib.Path(fname))
+
 

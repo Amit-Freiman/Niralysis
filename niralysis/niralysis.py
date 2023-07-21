@@ -66,6 +66,8 @@ class Niralysis:
 
     def __init__(self, snirf_fname: str):
 
+        if type(snirf_fname) == pathlib.WindowsPath:
+            snirf_fname = str(snirf_fname)
         # check if snirf_fname is a string
         if type(snirf_fname) != str:
             raise TypeError("snirf_fname must be a string")
@@ -73,8 +75,6 @@ class Niralysis:
         if len(snirf_fname) == 0:
             raise ValueError("snirf_fname cannot be empty")
         # check if snirf_fname is a path
-        if type(snirf_fname) == pathlib.WindowsPath:
-            snirf_fname = str(snirf_fname)
         # check if snirf_fname is a snirf file
         if not snirf_fname.endswith('.snirf'):
             raise ValueError("Not a snirf file.")
@@ -109,12 +109,12 @@ class Niralysis:
         old_detc_loc (numpy.ndarray): Stores the original detector optode locations if not already stored.
         old_sourc_loc (numpy.ndarray): Stores the original source optode locations if not already stored.
         """
-        # check if storm_fname is a string
-        if type(storm_fname) != str:
-            raise TypeError("storm_fname must be a string")
         # check if storm_fname is a path
         if type(storm_fname) == pathlib.WindowsPath:
             storm_fname = str(storm_fname)
+        # check if storm_fname is a string
+        if type(storm_fname) != str:
+            raise TypeError("storm_fname must be a string")
         # check if storm_fname is a txt file
         if not storm_fname.endswith('.txt'):
             raise ValueError("Not a txt file.")
