@@ -1,3 +1,37 @@
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "niralysis"
+version = "0.1"
+authors = [
+  { name="Amit Freiman", email="amitfreiman@mail.tau.ac.il" },
+]
+description = "An extensive library for dealing with fNIRS data anylsis. (as of this version only storm and openpose implemented)"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["snirf", "fNIRS", "STORM", "OpenPose", "analysis", "nirs"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+  "pandas",
+  "numpy",
+  "pathlib",
+  "snirf",
+]
+
+[project.optional-dependencies]
+cli = [
+  "STORM-net",
+  "openpose_python",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Amit-Freiman/Niralysis"
+"Bug Tracker" = "https://github.com/Amit-Freiman/Niralysis/issues"
+"Repository" = "https://github.com/Amit-Freiman/Niralysis.git"
+

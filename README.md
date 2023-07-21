@@ -91,24 +91,30 @@ Our package code facilitates the processing of output files containing the follo
 ## Usage
 
 ```python
-import niralysis
-
+from niralysis import Niralysis
+import zipfile
 
 # Import .snirf file into niralysis object
-file = niralysis('path to .snirf file')
+file = Niralysis('demo_data/60_001.snirf')
 
 # Replaces probe_location variable in .snirf file with digitized locations from STORM input
-file.storm('path to STORM file')
-# Provide a list of sources that are off-temaplate by default threshold of 20mm.
-file.invalid_sourc(Threshold)
-# Provide a list of detectors that are off-temaplate by default threshold of 20mm.
-file.invalid_detec(Threshold)
+file.storm('demo_data/STORM_demo.txt')
 
-# Generates attributes: 
+# List of sources that are off-temaplate by threshold of 6mm.
+file.invalid_sourc(6)
+# List of detectors that are off-temaplate by threshold of 20mm (default).
+file.invalid_detec()
+
+# Generate openpose attributes: 
 # data (Raw data combined from json files)
 # changed_frames (Timestampsand the changes in keypoints)
 # motion_label (Timestamps for a given label)
-file.generate_open_pose('path to openpose output folder')
+
+# First unzip the openpose output folder
+with zipfile.ZipFile('demo_data/sub59_session2_just_experimenter.zop', 'r') as zip_ref:
+    zip_ref.extractall('demo_data/openpose_output')
+# Run the function
+file.generate_open_pose('demo_data/openpose_output')
 
 ```
 

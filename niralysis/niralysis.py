@@ -1,8 +1,6 @@
 import pandas as pd
 import pathlib 
 import numpy as np
-from typing import Union
-import re
 from snirf import Snirf
 from niralysis.jsonOrganizer import process_json_files
 from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
@@ -593,7 +591,7 @@ class Niralysis:
 
         Args:
             path_to_open_pose_output_folder (str): path to open pose output folder (folder containing all json files)
-            beginning_of_recording (int): starting time of the recording to transform the timestamps (as frames) to seconds
+            beginning_of_recording (int): starting time of the recording to transform the timestamps (as frames) to seconds (FUNCTIONALITY NOT AVAILABLE YET)
             key_points_to_extract (list): 0 (defualt) to extract only head key points, 1 to extract head and arms key points
 
         Adds to self:
