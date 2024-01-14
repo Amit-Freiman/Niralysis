@@ -1,7 +1,7 @@
 import pathlib
 import pytest
 import pandas as pd
-from niralysis.niralysis import *
+from niralysis.Niralysis import *
 
 
  ######## Testing the Niralysis class ########

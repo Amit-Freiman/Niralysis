@@ -1,7 +1,6 @@
-import pandas as pd
 import pytest
-from niralysis.niralysis import *
-from niralysis.Events_to_label import events_to_labels 
+from niralysis.Niralysis import *
+from niralysis.utils.Events_to_label import events_to_labels
 
 # Define fixture
 
