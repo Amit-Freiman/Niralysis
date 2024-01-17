@@ -2,10 +2,14 @@ import pandas as pd
 import pathlib 
 import numpy as np
 from snirf import Snirf
-from niralysis.jsonOrganizer import process_json_files
-from niralysis.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
-from niralysis.calculate_pairwise_distance import calculate_pairwise_distance
-from niralysis.Events_to_label import events_to_labels 
+
+from niralysis.HbOData.HbOData import HbOData
+from niralysis.utils.jsonOrganizer import process_json_files
+from niralysis.calculators.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
+from niralysis.calculators.calculate_pairwise_distance import calculate_pairwise_distance
+from niralysis.utils.Events_to_label import events_to_labels
+import mne
+
 
 
 class Niralysis:
@@ -87,6 +91,14 @@ class Niralysis:
         self.old_sourc_loc = None
         self.old_detc_loc = None
         self.storm_fname = None
+        self.hbo_data = HbOData(snirf_fname)
+
+
+    ######## HbO ########
+
+    def set_hbo_data(self, channels: [int], low_pass_freq=0.01, high_pass_freq=0.5, path_length_factor=0.6):
+        self.hbo_data.preprocess(channels, low_pass_freq, high_pass_freq, path_length_factor)
+
         
     ######## STORM ########
 
