@@ -1,46 +1,123 @@
+from typing import Optional
+import re
 import mne
 import pandas as pd
-import pathlib
-import numpy as np
+from niralysis.Storm.Storm import Storm
+
+
 class HbOData:
-
     """
-    HbOData is a class to handle the HbO data of g given snirf file.
+    Class to handle HbO date
+     Args:
+        path (string): Path to the SNIRF file.
 
-
-    It holds the events frame - a table in witch every row is an event with columns=['event', 'time', 'duration']
+     Methods:
+        Preprocess - Preprocess HbO measurements from a raw fNIRS  signals within a SNIRF, across all channels.
+        Preprocessing includes:
+            drops channels from invalid source and invalid detectors by storm
+            convert intensity to optical density
+            filter low and high frequency bands
+            convert from optical density to concentration difference
+            convert to micro molar by given scale
 
     """
 
     def __init__(self, path: str):
+        self.user_data_frame = None
+        self.all_data_frame = None
         self.raw_data = mne.io.read_raw_snirf(path, preload=True)
         self.data = self.raw_data.get_data()
-        self.events = None
         self.concentrated_data = None
-        self.set_events_frame()
-        self.data_frame = None
+        self.storm_path = None
+        self.storm = Storm(path)
+        self.invalid_sourc = None
+        self.invalid_detec = None
 
-    def set_events_frame(self) -> None:
-        if self.raw_data.annotations is None:
-            self.events = None
+    def set_storm_path(self, storm_path: str):
+        """
+         Set the storm's file's path
+        @param storm_path:
+        """
+        self.storm.check_sorm_fname(storm_path)
+        self.storm_path = storm_path
 
-        events = pd.DataFrame(columns=['event', 'time', 'duration'])
-        events['event'] = self.raw_data.annotations.description
-        events['time'] = self.raw_data.annotations.onset
-        events['duration'] = self.raw_data.annotations.duration
-        self.events = events
+    def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.1,
+                   high_freq: float = 0.5,
+                   path_length_factor: float = 0.6, scale: float = 0.1, invalid_source_thresh: int = 20,
+                   invalid_detectors_thresh: int = 20):
+        """
+        Preprocess HbO measurements from a raw fNIRS signals within a SNIRF, across all channels.
+        Preprocessing includes:
+            drops channels from invalid source and invalid detectors by storm
+            convert intensity to optical density
+            filter low and high frequency bands
+            convert from optical density to concentration difference
+            convert to micro molar by given scale
 
-    def get_events_frame(self) -> pd.DataFrame | None:
-        return self.events
+        Creates a data Frame with column - 'time', ...relevant valid channels
+        Each raw represents the processed measurements of the HbO values at a certain time in each channel.
+        saves data frame in 'self.all_data_frame'
 
-    def preprocess(self, channels: [int], low_pass_freq, high_pass_freq, path_length_factor):
+        If a list of channels is provided creates the above frame only with the listed valid channels, saves
+        data frame in 'self.user_data_frame'
 
+        @param channels:  [int], A list of channels indexes to focus
+        @param with_storm: if True, drops channels with invalid source or detectors, requires to set a storm file path
+                           by method - "set_storm_path(storm_path)"
+        @param low_freq: method will filter values beneath low_freq
+        @param high_freq: method will filter values above low_freq
+        @param path_length_factor: The partial pathlength factor for beer lambert law
+        @param scale: scale to convert to micro molar
+        @param invalid_source_thresh: The threshold value for the Euclidean distance
+        @param invalid_detectors_thresh: The threshold value for the Euclidean distance.
+        @return: data Frame with column - 'time', ...relevant valid channels
+                Each raw represents the processed measurements of the HbO values at a certain time in each channel.
+                If a list of channels is provided returns only the valid listed channels.
+        """
+
+        # if storm - drop channels from invalid_sourc and invalid_detector
+        if with_storm:
+            if self.storm_path is None:
+                raise Exception('Could not find a storm\'s path.\n Please set a storm file path by method '
+                                '- "set_storm_path(storm_path)"')
+            self.storm.set_storm_file(self.storm_path)
+            self.invalid_sourc = self.storm.invalid_sourc(invalid_source_thresh)
+            self.invalid_detec = self.storm.invalid_detec(invalid_detectors_thresh)
+
+        # convert intensity to optical density
         processed_data = mne.preprocessing.nirs.optical_density(self.raw_data)
-        processed_data = processed_data.filter(l_freq=low_pass_freq, h_freq=high_pass_freq)
-        concentrated_data = mne.preprocessing.nirs.beer_lambert_law(processed_data, path_length_factor)
+
+        # filter low and high frequency bands
+        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  # N-EQ
+
+        # convert from optical density to concentration difference
+        concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
+
+        # extract HbO measurements and drops invalid channels
         channels_to_drop = [concentrated_data.ch_names[i] for i, ch_type in
-                            enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo']
+                            enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo' or
+                            self.is_storm_invalid_channel(concentrated_data.ch_names[i], with_storm)]
         concentrated_data = concentrated_data.drop_channels(channels_to_drop)
+
         data_frame = pd.DataFrame(concentrated_data.get_data().T, columns=concentrated_data.ch_names)
+
+        # convert to micro molar
+        data_frame = scale * data_frame
         data_frame.insert(0, 'time', concentrated_data.times)
-        self.data_frame = 0.1 * data_frame
+        self.all_data_frame = data_frame
+        self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
+
+        return self.user_data_frame
+
+    def is_storm_invalid_channel(self, channel_name: str, with_storm: bool) -> bool:
+        """
+        Checks if channel should be filtered out do to invalid source or detectors locations
+        @param channel_name:
+        @param with_storm: True to check if channel should be filtered out by storm
+        @return: True if channel should be filtered
+        """
+        if with_storm:
+            source, detector, type = re.split(r"[ _]", channel_name)
+            return (source.lower() in self.invalid_sourc.index.tolist() or detector.lower() in
+                    self.invalid_detec.index.tolist())
+        return False
