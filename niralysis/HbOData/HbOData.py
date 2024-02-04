@@ -41,7 +41,7 @@ class HbOData:
         self.storm.check_sorm_fname(storm_path)
         self.storm_path = storm_path
 
-    def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.1,
+    def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.01,
                    high_freq: float = 0.5,
                    path_length_factor: float = 0.6, scale: float = 0.1, invalid_source_thresh: int = 20,
                    invalid_detectors_thresh: int = 20):
