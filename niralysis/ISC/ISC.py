@@ -104,7 +104,9 @@ class ISC:
             ISC_table.iloc[i] = ISC.ISC(A_event, B_event, n_channels, sampling_rate)
 
         if output_path is not None:
-            ISC_table.export_csv(output_path)
+            if not output_path.endswith('.csv'):
+                raise ValueError('Output path must end with .csv')
+            ISC_table.to_csv(output_path)
 
         return ISC_table
 
