@@ -1,19 +1,21 @@
 import numpy
 import pandas as pd
 from numpy import mean, corrcoef, zeros
+from niralysis.utils.consts import *
+
 
 class ISC:
 
     @staticmethod
-    def get_binned_signals(df, timepoints_per_bin, n_channels):
+    def get_binned_signals(df: pd.DataFrame, timepoints_per_bin: int, n_channels: int):
         n_bins = round(df.shape[0] / timepoints_per_bin)
-        df.drop(columns='time', inplace=True)
+        df.drop(columns=TIME_COLUMN, inplace=True)
         binned_signal = []
 
         for i in range(n_bins - 1):
-            start_row = 1 + i * timepoints_per_bin
+            start_row = i * timepoints_per_bin
             end_row = start_row + timepoints_per_bin
-            binned_data = mean(df[start_row:end_row, :n_channels], axis=0)
+            binned_data = mean(df.iloc[start_row:end_row, :n_channels], axis=0)
             binned_signal.append(binned_data)
 
         return pd.DataFrame(binned_signal)
@@ -25,25 +27,25 @@ class ISC:
         """
         Calculates the ISC - Inter subject correlation between two subjects fNIRS measures of a certain event.
 
-        This function takes a two DataFrames containing HbO values coordinates and computes the person correlation between the subjects
-        HbO values at each chanel.
+        This function takes a two DataFrames containing HbO values coordinates and computes the person correlation
+        between the subjects HbO values at each chanel.
 
         Parameters:
-            df_A (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements..
-                The DataFrame should have columns for 'time' and channels, so each row represent the measured HbO values
+            df_A (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements.
+                The DataFrame should have columns for 'Time' and channels, so each row represent the measured HbO values
                 of each channel in a certain time.
-            df_B (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements..
-                The DataFrame should have columns for 'time' and channels, so each row represent the measured HbO values
+            df_B (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements.
+                The DataFrame should have columns for 'Time' and channels, so each row represent the measured HbO values
                 of each channel in a certain time.
             n_channels: number of channels.
             sampling_rate: sampling rate in seconds. Used to divide the time series to 5 seconds bins.
 
         Returns:
-            pd.DataFrame: vector of ISC values
+            pd.DataFrame: vector of ISC values for each channel
         """
         timepoints_per_bin = 5 / sampling_rate
-        A_binned_signal = get_binned_signals(df_A, timepoints_per_bin, n_channels)
-        B_binned_signal = get_binned_signals(df_B, timepoints_per_bin, n_channels)
+        A_binned_signal = ISC.get_binned_signals(df_A, int(timepoints_per_bin), n_channels)
+        B_binned_signal = ISC.get_binned_signals(df_B, int(timepoints_per_bin), n_channels)
 
         if (A_binned_signal.shape[0] != B_binned_signal.shape[0]):
             min_timepoints = min(A_binned_signal.shape[0], B_binned_signal.shape[0])
@@ -52,50 +54,58 @@ class ISC:
 
         channels_corr = zeros(n_channels)
 
+        # Pearson's correlation coefficient of each channel
         for channel in range(n_channels):
-            channels_corr[channel] = corrcoef(A_binned_signal[:, channel], B_binned_signal[:, channel])[0, 1]
+            channels_corr[channel] = corrcoef(A_binned_signal.iloc[:, channel], B_binned_signal.iloc[:, channel])[0, 1]
 
         return channels_corr
 
     @staticmethod
-    def ISC_by_events(events_table_path: str, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate, n_channels, output_path):
+    def ISC_by_events(events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate, n_channels,
+                      output_path = None):
         """
             Function to compute correlation between fNIRS measures of two objects, while attending a series of events,
             Parameters:
-                events_table_path (str): path to the table of events, csv file. Table must be as formatted as follow, each row represents
-                    an event. Table must have the following columns:
-                        events labels
-                        start - time stamp (in seconds) of the event's starting time
-                        end - time stamp (in seconds) of the event's end
+                events_table_path (str): path to the table of events, csv file. Table must be as formatted as follow:
+                 each row represents an event. Table must have the following columns:
+                        Event - the name of the event
+                        Start - time stamp (in seconds) of the event's starting time
+                        End - time stamp (in seconds) of the event's end
 
                 df_A (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements..
-                    The DataFrame should have columns for 'time' and channels, so each row represent the measured HbO values
+                    The DataFrame should have columns for 'Time' and channels, so each row represent the measured HbO values
                     of each channel in a certain time.
 
                 df_B (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements..
-                    The DataFrame should have columns for 'time' and channels, so each row represent the measured HbO values
-                    of each channel in a certain time.
+                    The DataFrame should have columns for 'Time' and channels, so each row represent the measured
+                    HbO values of each channel in a certain time.
 
                 n_channels: number of channels.
                 sampling_rate: sampling rate in seconds. Used to divide the time series to 5 seconds bins.
+
+                output_path: a pth to csv file, if given the function will save the returned data frame in to the
+                given path.
+
+
 
             Returns:
                 pd.DataFrame: table of ISC values, each row is an ISC values of each channel at a certain event.
 
         """
-        events_table = pd.read_csv(events_table_path)
-        events_labels = events_table['events labels'].tolist()
-        channel_list = range(1, n_channels + 1)
-        data_dict = {event: channel_list for event in events_labels}
-        ISC_table = pd.DataFrame.from_dict(data_dict, orient='index', columns=channel_list)
+        events_labels = events_table[EVENT_COLUMN].tolist()
+        ISC_table = pd.DataFrame(index=events_labels, columns=range(1, n_channels + 1))
 
-        for i, label in enumerate(events_labels):
-            starting_time = events_table['start'][i]
-            ending_time = events_table['end'][i]
-            A_event = df_A[(df_A['time'] >= starting_time) & (df_A['time'] <= ending_time)]
-            B_event = df_B[(df_A['time'] >= starting_time) & (df_B['time'] <= ending_time)]
+        for i in range(len(events_labels)):
+            starting_time = events_table[START_COLUMN][i]
+            ending_time = events_table[END_COLUMN][i]
+            A_event = df_A[(df_A[TIME_COLUMN] >= starting_time) & (df_A[TIME_COLUMN] <= ending_time)]
+            B_event = df_B[(df_A[TIME_COLUMN] >= starting_time) & (df_B[TIME_COLUMN] <= ending_time)]
 
-            ISC_table.loc[label] = ISC(A_event, B_event, n_channels, sampling_rate)
+            ISC_table.iloc[i] = ISC.ISC(A_event, B_event, n_channels, sampling_rate)
+
+        if output_path is not None:
+            ISC_table.export_csv(output_path)
 
         return ISC_table
+
 

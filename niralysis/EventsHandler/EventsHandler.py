@@ -1,6 +1,7 @@
 import re
 import mne
 import pandas as pd
+from niralysis.utils.consts import *
 
 
 class EventsHandler:
@@ -16,6 +17,8 @@ class EventsHandler:
          get_spotted_events_frame - spotted events getter
          get_continuous_events_frame - continuous events getter
     """
+
+
     def __init__(self, path: str):
         self.raw_data = mne.io.read_raw_snirf(path, preload=True)
         self.continuous_events = None
@@ -29,10 +32,10 @@ class EventsHandler:
         if self.raw_data.annotations is None:
             self.spotted_events = None
 
-        events = pd.DataFrame(columns=['event', 'time', 'duration'])
-        events['event'] = self.raw_data.annotations.description
-        events['time'] = self.raw_data.annotations.onset
-        events['duration'] = self.raw_data.annotations.duration
+        events = pd.DataFrame(columns=[END_COLUMN, TIME_COLUMN, DURATION_COLUMN])
+        events[END_COLUMN] = self.raw_data.annotations.description
+        events[TIME_COLUMN] = self.raw_data.annotations.onset
+        events[DURATION_COLUMN] = self.raw_data.annotations.duration
         self.spotted_events = events
 
     def set_continuous_events_frame(self) -> None:
@@ -47,28 +50,29 @@ class EventsHandler:
         if self.raw_data.annotations is None:
             self.spotted_events = None
 
-        events = pd.DataFrame(columns=['event', 'start', 'end', 'duration'])
+        events = pd.DataFrame(columns=[EVENT_COLUMN, START_COLUMN, END_COLUMN, DURATION_COLUMN])
 
         events_index = {}
         ind = 0
         for i, event in enumerate(self.raw_data.annotations.description):
-            if event.startswith('begin'):
+            if event.startswith(EVENT_BEGIN):
                 name = re.split(r"[: -]", event, 1)[1].strip()
                 events_index[name] = ind
-                events.at[ind, 'event'] = name
-                events.at[ind, 'start'] = self.raw_data.annotations.onset[i]
+                events.at[ind, EVENT_COLUMN] = name
+                events.at[ind, START_COLUMN] = self.raw_data.annotations.onset[i]
                 ind += 1
-            elif event.startswith('end'):
+            elif event.startswith(EVENT_END):
                 name = re.split(r"[: -]", event, 1)[1].strip()
                 event_ind = events_index[name]
-                events.at[event_ind, 'end'] = self.raw_data.annotations.onset[i]
-                events.at[event_ind, 'duration'] = self.raw_data.annotations.onset[i] - events.at[event_ind, 'start']
+                events.at[event_ind, END_COLUMN] = self.raw_data.annotations.onset[i]
+                events.at[event_ind, DURATION_COLUMN] = (self.raw_data.annotations.onset[i] -
+                                                         events.at[event_ind, START_COLUMN])
             else:
                 # a spotted event
-                events.at[ind, 'event'] = event
-                events.at[ind, 'start'] = self.raw_data.annotations.onset[i]
-                events.at[ind, 'end'] = self.raw_data.annotations.onset[i] + self.raw_data.annotations.duration[i]
-                events[ind, 'duration'] = self.raw_data.annotations.duration[i]
+                events.at[ind, EVENT_COLUMN] = event
+                events.at[ind, START_COLUMN] = self.raw_data.annotations.onset[i]
+                events.at[ind, END_COLUMN] = self.raw_data.annotations.onset[i] + self.raw_data.annotations.duration[i]
+                events[ind, DURATION_COLUMN] = self.raw_data.annotations.duration[i]
                 ind += 1
 
         self.continuous_events = events
