@@ -4,6 +4,7 @@ import numpy as np
 from snirf import Snirf
 
 from niralysis.HbOData.HbOData import HbOData
+from niralysis.EventsHandler.EventsHandler import EventsHandler
 from niralysis.utils.jsonOrganizer import process_json_files
 from niralysis.calculators.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
 from niralysis.calculators.calculate_pairwise_distance import calculate_pairwise_distance
@@ -92,6 +93,8 @@ class Niralysis:
         self.old_detc_loc = None
         self.storm_fname = None
         self.hbo_data = HbOData(snirf_fname)
+        self.events_handler = EventsHandler(snirf_fname)
+
 
 
     ######## HbO ########
