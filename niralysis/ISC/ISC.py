@@ -2,28 +2,27 @@ import numpy
 import pandas as pd
 from numpy import mean, corrcoef, zeros
 from niralysis.utils.consts import *
+from niralysis.utils.data_menipulation import set_data_by_areas
 
 
 class ISC:
 
     @staticmethod
-    def get_binned_signals(df: pd.DataFrame, timepoints_per_bin: int, n_channels: int):
+    def get_binned_signals(df: pd.DataFrame, timepoints_per_bin: int):
         n_bins = round(df.shape[0] / timepoints_per_bin)
-        df.drop(columns=TIME_COLUMN, inplace=True)
+        df = df.drop(columns=TIME_COLUMN)
         binned_signal = []
 
         for i in range(n_bins - 1):
             start_row = i * timepoints_per_bin
             end_row = start_row + timepoints_per_bin
-            binned_data = mean(df.iloc[start_row:end_row, :n_channels], axis=0)
+            binned_data = mean(df.iloc[start_row:end_row, :], axis=0)
             binned_signal.append(binned_data)
 
         return pd.DataFrame(binned_signal)
 
-
-
     @staticmethod
-    def ISC(df_A: pd.DataFrame, df_B: pd.DataFrame, n_channels, sampling_rate) -> numpy.array:
+    def ISC(df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float, by_areas: dict = None) -> numpy.array:
         """
         Calculates the ISC - Inter subject correlation between two subjects fNIRS measures of a certain event.
 
@@ -43,14 +42,20 @@ class ISC:
         Returns:
             pd.DataFrame: vector of ISC values for each channel
         """
+        if by_areas is not None:
+            df_A = set_data_by_areas(df_A, by_areas)
+            df_B = set_data_by_areas(df_B, by_areas)
+
+        n_channels = df_A.shape[1] - 1
+
         timepoints_per_bin = 5 / sampling_rate
-        A_binned_signal = ISC.get_binned_signals(df_A, int(timepoints_per_bin), n_channels)
-        B_binned_signal = ISC.get_binned_signals(df_B, int(timepoints_per_bin), n_channels)
+        A_binned_signal = ISC.get_binned_signals(df_A, int(timepoints_per_bin))
+        B_binned_signal = ISC.get_binned_signals(df_B, int(timepoints_per_bin))
 
         if (A_binned_signal.shape[0] != B_binned_signal.shape[0]):
             min_timepoints = min(A_binned_signal.shape[0], B_binned_signal.shape[0])
-            A_binned_signal = A_binned_signal.iloc[:min_timepoints,:]
-            B_binned_signal = B_binned_signal.iloc[:min_timepoints,:]
+            A_binned_signal = A_binned_signal.iloc[:min_timepoints, :]
+            B_binned_signal = B_binned_signal.iloc[:min_timepoints, :]
 
         channels_corr = zeros(n_channels)
 
@@ -61,8 +66,9 @@ class ISC:
         return channels_corr
 
     @staticmethod
-    def ISC_by_events(events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate, n_channels,
-                      output_path = None):
+    def ISC_by_events(events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float = 0.02,
+                      by_areas: dict = None,
+                      output_path=None):
         """
             Function to compute correlation between fNIRS measures of two objects, while attending a series of events,
             Parameters:
@@ -92,8 +98,16 @@ class ISC:
                 pd.DataFrame: table of ISC values, each row is an ISC values of each channel at a certain event.
 
         """
+
+        if df_A.shape[1] != df_B.shape[1]:
+            raise ValueError('df_A and df_B does not contain the same channels')
+
+        if by_areas is not None:
+            df_A = set_data_by_areas(df_A, by_areas)
+            df_B = set_data_by_areas(df_B, by_areas)
+
         events_labels = events_table[EVENT_COLUMN].tolist()
-        ISC_table = pd.DataFrame(index=events_labels, columns=range(1, n_channels + 1))
+        ISC_table = pd.DataFrame(index=events_labels, columns=df_A.columns[1:])
 
         for i in range(len(events_labels)):
             starting_time = events_table[START_COLUMN][i]
@@ -101,7 +115,7 @@ class ISC:
             A_event = df_A[(df_A[TIME_COLUMN] >= starting_time) & (df_A[TIME_COLUMN] <= ending_time)]
             B_event = df_B[(df_A[TIME_COLUMN] >= starting_time) & (df_B[TIME_COLUMN] <= ending_time)]
 
-            ISC_table.iloc[i] = ISC.ISC(A_event, B_event, n_channels, sampling_rate)
+            ISC_table.iloc[i] = ISC.ISC(A_event, B_event, sampling_rate)
 
         if output_path is not None:
             if not output_path.endswith('.csv'):
@@ -109,5 +123,3 @@ class ISC:
             ISC_table.to_csv(output_path)
 
         return ISC_table
-
-
