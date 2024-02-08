@@ -66,7 +66,7 @@ class ISC:
         return channels_corr
 
     @staticmethod
-    def ISC_by_events(events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate,
+    def ISC_by_events(events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float = 0.02,
                       by_areas: dict = None,
                       output_path=None):
         """
@@ -107,8 +107,7 @@ class ISC:
             df_B = set_data_by_areas(df_B, by_areas)
 
         events_labels = events_table[EVENT_COLUMN].tolist()
-        n_channels = df_A.shape[1] - 1
-        ISC_table = pd.DataFrame(index=events_labels, columns=range(1, n_channels + 1))
+        ISC_table = pd.DataFrame(index=events_labels, columns=df_A.columns[1:])
 
         for i in range(len(events_labels)):
             starting_time = events_table[START_COLUMN][i]

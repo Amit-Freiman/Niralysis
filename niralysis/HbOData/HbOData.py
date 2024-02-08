@@ -3,6 +3,7 @@ import re
 import mne
 import pandas as pd
 from niralysis.Storm.Storm import Storm
+from niralysis.utils.consts import *
 
 
 class HbOData:
@@ -103,7 +104,7 @@ class HbOData:
 
         # convert to micro molar
         data_frame = scale * data_frame
-        data_frame.insert(0, 'time', concentrated_data.times)
+        data_frame.insert(0, TIME_COLUMN, concentrated_data.times)
         self.all_data_frame = data_frame
         self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
 
@@ -121,3 +122,8 @@ class HbOData:
             return (source.lower() in self.invalid_sourc.index.tolist() or detector.lower() in
                     self.invalid_detec.index.tolist())
         return False
+
+    def get_hbo_data(self):
+        if self.user_data_frame is None:
+            raise Exception("No Data Frame is available, make sure to create data frame br the preprocess function")
+        return self.user_data_frame
