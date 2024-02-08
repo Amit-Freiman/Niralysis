@@ -10,7 +10,7 @@ class ISC:
     @staticmethod
     def get_binned_signals(df: pd.DataFrame, timepoints_per_bin: int):
         n_bins = round(df.shape[0] / timepoints_per_bin)
-        df.drop(columns=TIME_COLUMN, inplace=True)
+        df = df.drop(columns=TIME_COLUMN)
         binned_signal = []
 
         for i in range(n_bins - 1):
