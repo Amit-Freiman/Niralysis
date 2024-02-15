@@ -4,6 +4,7 @@ import mne
 import pandas as pd
 from niralysis.Storm.Storm import Storm
 from niralysis.utils.consts import *
+from itertools import compress
 
 
 class HbOData:
@@ -33,6 +34,7 @@ class HbOData:
         self.storm = Storm(path)
         self.invalid_sourc = None
         self.invalid_detec = None
+        self.bad_channels = None
 
     def set_storm_path(self, storm_path: str):
         """
@@ -88,6 +90,14 @@ class HbOData:
         # convert intensity to optical density
         processed_data = mne.preprocessing.nirs.optical_density(self.raw_data)
 
+        # evaluate the quality of the data using a scalp coupling index (SCI)
+        sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
+        self.bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
+        processed_data = processed_data.drop_channels(self.bad_channels)
+
+        # apply temporal derivative distribution repair (tddr) to remove motion artifacts
+        processed_data = mne.preprocessing.nirs.tddr(processed_data)
+
         # filter low and high frequency bands
         filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  # N-EQ
 
@@ -99,6 +109,8 @@ class HbOData:
                             enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo' or
                             self.is_storm_invalid_channel(concentrated_data.ch_names[i], with_storm)]
         concentrated_data = concentrated_data.drop_channels(channels_to_drop)
+        # Add channel names dropped to "bad_channels" attribute
+        self.bad_channels += channels_to_drop
 
         data_frame = pd.DataFrame(concentrated_data.get_data().T, columns=concentrated_data.ch_names)
 
