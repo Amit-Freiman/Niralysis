@@ -6,6 +6,36 @@ from snirf import Snirf
 
 
 class Storm:
+
+    """
+        Class to update SNIRF probe locations with STORM data.
+        
+        Methods:
+            storm: Update SNIRF probe locations with STORM data.
+                Functions and methods used in storm:
+                set_storm_file: Set the STORM file for STORM analysis.
+                read_storm_to_DF: Read the STORM data from the provided STORM.txt file and return it as a pandas DataFrame.
+                storm_prob: Extract the STORM source and detector optode locations from the STORM data.
+                is_storm_valid: Validate the STORM data to ensure it contains valid source and detector optode locations.
+                snirf_with_storm_prob: Update the SNIRF data with STORM optode locations and save the modified data back to the original SNIRF file.
+                get_old_probe_locations: Get the original probe locations before updating with STORM data.
+            invalid_sourc: Identify the source optode locations that have a Euclidean distance greater than or equal to the specified threshold
+            from the original source optode locations.
+            invalid_detec: Identify the detector optode locations that have a Euclidean distance greater than or equal to the specified threshold
+            from the original detector optode locations.
+                Functions and methods used in invalid_sourc and invalid_detec:
+                euclidean_dist: Calculate the Euclidean distance between the optode locations before and after the STORM data update.
+
+        Attributes:
+            snirf_fname (pathlib.Path): The file path of the SNIRF file.
+            old_sourc_loc (numpy.ndarray or None): The original source optode locations.
+            old_detc_loc (numpy.ndarray or None): The original detector optode locations.
+            storm_fname (pathlib.Path or None): The file path of the STORM file, if set.
+            snirf_detc_loc (numpy.ndarray): The updated detector optode locations with the STORM data.
+            snirf_sourc_loc (numpy.ndarray): The updated source optode locations with the STORM data.
+            storm_data (pd.DataFrame): The STORM data loaded from the file.
+            
+    """
     def __init__(self, snirf_fname):
 
         self.snirf_fname = snirf_fname

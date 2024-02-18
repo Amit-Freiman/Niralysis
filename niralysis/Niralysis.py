@@ -1,17 +1,12 @@
-import pandas as pd
 import pathlib 
-import numpy as np
-from snirf import Snirf
 
 from niralysis.Storm.Storm import Storm
 from niralysis.OpenPose.OpenPose import OpenPose
 from niralysis.HbOData.HbOData import HbOData
 from niralysis.EventsHandler.EventsHandler import EventsHandler
-from niralysis.utils.jsonOrganizer import process_json_files
-from niralysis.calculators.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps, get_table_of_summed_distances_for_kp_over_time
-from niralysis.calculators.calculate_pairwise_distance import calculate_pairwise_distance
+from niralysis.utils.consts import HEAD_KP, ARM_KP
+from niralysis.calculators.calculate_differences import get_table_of_summed_distances_for_kp_over_time
 from niralysis.utils.Events_to_label import events_to_labels
-import mne
 
 
 
@@ -21,23 +16,20 @@ class Niralysis:
     Initialize a Niralysis object with a SNIRF file.
 
     Parameters:
+
         snirf_fname (str): The file path of the SNIRF file.
     
     Methods:
-        storm: Update SNIRF probe locations with STORM data.
-            Functions and methods used in storm:
-                set_storm_file: Set the STORM file for STORM analysis.
-                read_storm_to_DF: Read the STORM data from the provided STORM.txt file and return it as a pandas DataFrame.
-                storm_prob: Extract the STORM source and detector optode locations from the STORM data.
-                is_storm_valid: Validate the STORM data to ensure it contains valid source and detector optode locations.
-                snirf_with_storm_prob: Update the SNIRF data with STORM optode locations and save the modified data back to the original SNIRF file.
-                get_old_probe_locations: Get the original probe locations before updating with STORM data.
-        invalid_sourc: Identify the source optode locations that have a Euclidean distance greater than or equal to the specified threshold
-            from the original source optode locations.
-        invalid_detec: Identify the detector optode locations that have a Euclidean distance greater than or equal to the specified threshold
-            from the original detector optode locations.
-            Functions and methods used in invalid_sourc and invalid_detec:
-                euclidean_dist: Calculate the Euclidean distance between the optode locations before and after the STORM data update.
+
+        set_hbo_data: Set the HbO data for the SNIRF file.
+
+        update_probe_loc_storm : Update SNIRF probe locations with STORM data.
+            Functions and methods used in update_probe_loc_storm:
+                storm: Load the STORM data.
+                invalid_sourc: Identify the source optode locations that have a Euclidean distance greater than or equal to the specified threshold
+                    from the original source optode locations.
+                invalid_detec: Identify the detector optode locations that have a Euclidean distance greater than or equal to the specified threshold
+                    from the original detector optode locations.
         
         generate_open_pose: General function to analyse open pose data for head movements and arm movements and save the results as motion labels with corresponding timestamps.
             Functions and methods used in generate_open_pose:    
@@ -51,22 +43,16 @@ class Niralysis:
         
 
     Attributes:
-        snirf_fname (pathlib.Path): The file path of the SNIRF file.
-        snirf_data (Snirf): The loaded SNIRF data.
-        storm_fname (pathlib.Path or None): The file path of the STORM file, if set.
-        old_sourc_loc (numpy.ndarray or None): The original source optode locations.
-        old_detc_loc (numpy.ndarray or None): The original detector optode locations.
-        invalid_sourc(numpy.ndarray): the source optode locations that are off-place and invalid.
-        invalid_detec(numpy.ndarray):the detector optode locations that are off-place and invalid.
-        data (pd.DataFrame): data frame of the json file combined
-        changed_frames (pd.DataFrame): data frame of the change in distance and position for each keypoint
-            between consecutive time frames for each key point
-        motion_label (pd.DataFrame): data frame of the motion labels for each timestamp
-        """ 
+        snirf_fname (str): The file path of the SNIRF file.
+        old_sourc_loc (pd.DataFrame): The original source optode locations.
+        old_detc_loc (pd.DataFrame): The original detector optode locations.
+        storm_fname (str): The file path of the STORM file.
+        hbo_data (HbOData): HbOData object.
+        events_handler (EventsHandler): EventsHandler object.
+        invalid_optodes (list): The source and detector optode locations that are off-place and therefor invalid.
 
-    FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
-    HEAD_KP = [0,1,2,5,15,16,17,18]
-    ARM_KP = [1,2,3,4,5,6,7,8]
+    
+        """ 
 
 
     def __init__(self, snirf_fname: str):
@@ -168,9 +154,9 @@ class Niralysis:
             raise ValueError("beginning_of_recording must be a positive integer")
         
         if key_points_to_extract == 0:
-            key_points_to_extract = Niralysis.HEAD_KP
+            key_points_to_extract = HEAD_KP
         else:
-            key_points_to_extract = Niralysis.ARM_KP + Niralysis.HEAD_KP
+            key_points_to_extract = ARM_KP + HEAD_KP
         
         op_data = OpenPose(path_to_open_pose_output_folder)
         op_data.data = op_data.get_csv(path_to_open_pose_output_folder)
