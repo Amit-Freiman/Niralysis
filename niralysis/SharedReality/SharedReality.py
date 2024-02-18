@@ -1,5 +1,6 @@
 import pandas as pd
 
+from .consts import *
 from niralysis.ISC.ISC import ISC
 from niralysis.Niralysis import Niralysis
 
@@ -14,17 +15,7 @@ CONTROL_2 = "control second watch"
 TABLE_ROWS = [A_PRE_CHOICE_1, A_PRE_CHOICE_2, B_PRE_CHOICE_1, B_PRE_CHOICE_2, POST_CHOICE_1, POST_CHOICE_2, CONTROL_1,
               CONTROL_2]
 
-old_area_dict = {
-    "left TPJ": [12, 13, 14],
-    "right TPJ": [1, 2, 3, 4],
 
-    "left lPFC": [10, 15, 16, 7, 9],
-    "left mPFC": [2, 3, 4],
-    "right mPFC": [1, 6, 5],
-
-    "Auditory Cortex": [17, 18, 19, 20],
-    "Occipital Cortex": [5, 6, 7, 8]
-}
 
 
 class SharedReality:

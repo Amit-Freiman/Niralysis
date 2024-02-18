@@ -6,6 +6,8 @@ from niralysis.Storm.Storm import Storm
 from niralysis.utils.consts import *
 from itertools import compress
 
+from niralysis.utils.data_menipulation import set_data_by_areas
+
 
 class HbOData:
     """
@@ -35,6 +37,8 @@ class HbOData:
         self.invalid_sourc = None
         self.invalid_detec = None
         self.bad_channels = None
+        self.data_by_areas = None
+
 
     def set_storm_path(self, storm_path: str):
         """
@@ -137,5 +141,17 @@ class HbOData:
 
     def get_hbo_data(self):
         if self.user_data_frame is None:
-            raise Exception("No Data Frame is available, make sure to create data frame br the preprocess function")
+            raise Exception("No Data Frame is available, make sure to create data frame by the preprocess function")
         return self.user_data_frame
+
+    def set_data_by_areas(self, areas: dict):
+        if self.user_data_frame is None:
+            raise Exception("No Data Frame is available, make sure to create data frame by the preprocess function")
+
+        self.data_by_areas = set_data_by_areas(self.user_data_frame, areas)
+
+    def get_hbo_data_by_areas(self):
+        if self.data_by_areas is None:
+            raise Exception("No Data Frame is available, make sure to create data frame by the set_data_by_areas "
+                            "function")
+        return self.data_by_areas
