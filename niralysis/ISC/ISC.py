@@ -36,9 +36,10 @@ class ISC:
             df_B (pd.DataFrame): DataFrame containing HbO values coordinates from object A measurements.
                 The DataFrame should have columns for 'Time' and channels, so each row represent the measured HbO values
                 of each channel in a certain time.
-            n_channels: number of channels.
             sampling_rate: sampling rate in seconds. Used to divide the time series to 5 seconds bins.
-
+            by_areas : A dict that maps channels to brain areas, if given the ISC will be calculated between the mean
+                    HbO values of each brain's area channel, if None, the ISC will be calculated between each channel.
+                     key: brain area name, value: list of channels name, S<number>_D<number>
         Returns:
             pd.DataFrame: vector of ISC values for each channel
         """
@@ -86,9 +87,10 @@ class ISC:
                     The DataFrame should have columns for 'Time' and channels, so each row represent the measured
                     HbO values of each channel in a certain time.
 
-                n_channels: number of channels.
                 sampling_rate: sampling rate in seconds. Used to divide the time series to 5 seconds bins.
-
+                by_areas : A dict that maps channels to brain areas, if given the ISC will be calculated between the mean
+                        HbO values of each brain's area channel, if None, the ISC will be calculated between each channel.
+                         key: brain area name, value: list of channels name, S<number>_D<number>
                 output_path: a pth to csv file, if given the function will save the returned data frame in to the
                 given path.
 

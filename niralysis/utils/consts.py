@@ -12,3 +12,12 @@ EVENT_COLUMN = 'Event'
 
 EVENT_BEGIN = 'begin'
 EVENT_END = 'end'
+
+# fps
+
+FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
+
+# key points
+
+HEAD_KP = [0,1,2,5,15,16,17,18]
+ARM_KP = [1,2,3,4,5,6,7,8]

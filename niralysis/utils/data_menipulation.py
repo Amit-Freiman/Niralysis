@@ -13,7 +13,7 @@ def set_data_by_areas(df: pd.DataFrame, areas: dict) -> pd.DataFrame:
     @param df: HbO values data table, first column - 'Time', each other column is a certain channel's measurements
             values. Each row is the value of all the channels in a given time
     @param areas: dictionary that associate brain areas and channels - keys: brain area name, value: a list of
-            channels indexes.
+            channels names.
     @return: HbO values data table, first column - 'Time', each other column is a certain brain's area measurements
             values. Each row is the value of all the brain's area in a given time
 
