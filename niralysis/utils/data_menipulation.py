@@ -13,7 +13,7 @@ def set_data_by_areas(df: pd.DataFrame, areas: dict) -> pd.DataFrame:
     @param df: HbO values data table, first column - 'Time', each other column is a certain channel's measurements
             values. Each row is the value of all the channels in a given time
     @param areas: dictionary that associate brain areas and channels - keys: brain area name, value: a list of
-            channels indexes.
+            channels names.
     @return: HbO values data table, first column - 'Time', each other column is a certain brain's area measurements
             values. Each row is the value of all the brain's area in a given time
 
@@ -21,7 +21,10 @@ def set_data_by_areas(df: pd.DataFrame, areas: dict) -> pd.DataFrame:
     data_by_area = pd.DataFrame()
     data_by_area[TIME_COLUMN] = df[TIME_COLUMN]
     for area in areas.keys():
-        data_by_area[area] = df.iloc[:, areas[area]].mean(axis=1)
+        valid_channels = [channel for channel in areas[area] if channel in df.columns]
+        if not valid_channels:
+            raise Exception(f"No Valid Channels for area {area}")
+        data_by_area[area] =df[valid_channels].mean(axis=1)
 
     return data_by_area
 
