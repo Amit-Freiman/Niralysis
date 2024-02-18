@@ -4,10 +4,6 @@ import pathlib
 import numpy as np
 from snirf import Snirf
 
-from niralysis.utils.jsonOrganizer import process_json_files
-from niralysis.calculators.calculate_differences import get_table_of_deltas_between_time_stamps_in_all_kps
-from niralysis.calculators.calculate_pairwise_distance import calculate_pairwise_distance
-
 
 class Storm:
     def __init__(self, snirf_fname):
@@ -19,7 +15,7 @@ class Storm:
         self.storm_data = None
         pass
 
-    def check_sorm_fname(self, storm_fname):
+    def check_storm_fname(self, storm_fname):
         # check if storm_fname is a path
         if type(storm_fname) == pathlib.WindowsPath:
             storm_fname = str(storm_fname)
@@ -36,14 +32,14 @@ class Storm:
         if storm_fname is None:
             raise ValueError("storm_fname cannot be empty")
 
-    def storm(self, storm_fname, user_input: int = 0):
+    def storm(self, storm_fname, user_input: bool = False):
         """
     Update SNIRF probe locations with STORM data.
     If the STORM data is valid and the update is successful, the method prints a confirmation message.
 
     Parameters:
         storm_fname (str): The file path of the STORM.txt file.
-        user_input (int): The user can choose to view the updated source and detector optode locations or they can skip the preview . Default is set to 0.
+        user_input (bool): The user can choose to view the updated source and detector optode locations or they can skip the preview . Default is set to False.
 
     Raises:
         ValueError: If the STORM file does not exist.
@@ -54,21 +50,8 @@ class Storm:
         old_detc_loc (numpy.ndarray): Stores the original detector optode locations if not already stored.
         old_sourc_loc (numpy.ndarray): Stores the original source optode locations if not already stored.
         """
-        # check if storm_fname is a path
-        if type(storm_fname) == pathlib.WindowsPath:
-            storm_fname = str(storm_fname)
-        # check if storm_fname is a string
-        if type(storm_fname) != str:
-            raise TypeError("storm_fname must be a string")
-        # check if storm_fname is a txt file
-        if not storm_fname.endswith('.txt'):
-            raise ValueError("Not a txt file.")
-        # check if storm_fname exists
-        if not pathlib.Path(storm_fname).exists():
-            raise ValueError("storm_fname does not exist")
-        # check if storm_fname is empty
-        if storm_fname is None:
-            raise ValueError("storm_fname cannot be empty")
+        # check storm_fname input
+        self.check_storm_fname(storm_fname)
         # check if user_input is an integer
         if type(user_input) != int:
             raise TypeError("user_input must be an integer")
@@ -89,11 +72,11 @@ class Storm:
 
             print("Your snirf file has been updated.")
 
-            if user_input == str(1):
+            if user_input == True:
                 place = Snirf(rf'{self.snirf_fname}', 'r+')
-                print("The updated sourcs' locaions: \n")
+                print("The updated sources' locations: \n")
                 print(place.nirs[0].probe.sourcePos3D[:, :])
-                print("The updated detectors' locaions: \n")
+                print("The updated detectors' locations: \n")
                 print(place.nirs[0].probe.detectorPos3D[:, :])
             else:
                 pass
@@ -110,31 +93,9 @@ class Storm:
         Parameters:
             storm_fname (str): The file path of the STORM.txt file.
 
-        Raises:
-            ValueError: If the STORM file does not exist.
-            ValueError: If the STORM file is not in a txt format.
-            ValueError: If the STORM file is empty.
-            TypeError: If the STORM file is not a string or path Object.
-
         Updates:
             storm_fname (pathlib.Path): The file path of the STORM.txt file.
         """
-        # check if storm_fname is a path
-        if type(storm_fname) == pathlib.WindowsPath:
-            storm_fname = str(storm_fname)
-        # check if storm_fname is a string
-        if type(storm_fname) != str:
-            raise TypeError("storm_fname must be a string")
-        # check if storm_fname is a txt file
-        if not storm_fname.endswith('.txt'):
-            raise ValueError("Not a txt file.")
-        # check if storm_fname exists
-        if not pathlib.Path(storm_fname).exists():
-            raise ValueError("storm_fname does not exist")
-        # check if storm_fname is empty
-        if storm_fname is None:
-            raise ValueError("storm_fname cannot be empty")
-
         self.storm_fname = pathlib.Path(storm_fname)
         self.storm_data = Storm.read_storm_to_DF(storm_fname)
 
@@ -145,31 +106,9 @@ class Storm:
         Parameters:
             storm_fname (str): The file path of the STORM.txt file.
 
-        Raises:
-            ValueError: If the STORM file does not exist.
-            ValueError: If the STORM file is not in a txt format.
-            ValueError: If the STORM file is empty.
-            TypeError: If the STORM file is not a string or Path object.
-
         Returns:
             pd.DataFrame: The STORM data loaded from the file.
         """
-        # check if storm_fname is a path
-        if type(storm_fname) == pathlib.WindowsPath:
-            storm_fname = str(storm_fname)
-        # check if storm_fname is a string
-        if type(storm_fname) != str:
-            raise TypeError("storm_fname must be a string")
-        # check if storm_fname is a txt file
-        if not storm_fname.endswith('.txt'):
-            raise ValueError("Not a txt file.")
-        # check if storm_fname exists
-        if not pathlib.Path(storm_fname).exists():
-            raise ValueError("storm_fname does not exist")
-        # check if storm_fname is empty
-        if storm_fname is None:
-            raise ValueError("storm_fname cannot be empty")
-
         storm_data = pd.read_csv(storm_fname, delim_whitespace=True, index_col=0, header=None)
         storm_data.index.name = None
         return storm_data
@@ -364,157 +303,4 @@ class Storm:
         invalid_detec = storm_detc_loc[detc_euclidean_dist >= thresh]
         return invalid_detec
 
-    ######## Openpose ########
-
-    def get_csv(self, json_folder):
-        """
-        Convert folder containing json files to csv file.
-
-        Args:
-            json_folder (str): path to folder cotaining all json files of the recording
-
-        Returns:
-            data (pd.DataFrame): data frame of the json files combined and organized
-            """
-        # check if json_folder is a string
-        if type(json_folder) != str:
-            raise TypeError("json_folder must be a string")
-        # check if json_folder is empty
-        if len(json_folder) == 0:
-            raise ValueError("json_folder cannot be empty")
-        # check if json_folder is a path
-        if type(json_folder) == pathlib.WindowsPath:
-            json_folder = str(json_folder)
-
-        return process_json_files(json_folder)
-
-    def extract_key_point(self, key_points: list) -> pd.DataFrame:
-
-        """
-        Extract the data from the data frame, according to the key points given.
-
-        Args:
-            key_points (list): list of key points to extract
-
-        Returns:
-            filtered_key_point_data (pd.DataFrame): filtered data frame containing only the key points given
-            """
-
-        # check if key_points is a list
-        if type(key_points) != list:
-            raise TypeError("key_points must be a list")
-        # check if key_points is empty
-        if len(key_points) == 0:
-            raise ValueError("key_points cannot be empty")
-        # check if key_points contains only integers
-        for key_point in key_points:
-            if type(key_point) != int:
-                raise TypeError("key_points must contain only integers")
-        # check if key_points contains only integers between 0 and 24
-        for key_point in key_points:
-            if key_point < 0 or key_point > 24:
-                raise ValueError("key_points must contain only integers between 0 and 24")
-
-        # Find the key points in the column headers
-
-        columns_to_include = []
-        for key_point in key_points:
-            key_point_names = ["KP_" + str(key_point) + "_x", "KP_" + str(key_point) + "_y",
-                               "KP_" + str(key_point) + "_confidence"]
-            for header in key_point_names:
-                columns_to_include.append(header)
-
-        # extract key points
-        filtered_key_point_data = self.data[columns_to_include]
-        return filtered_key_point_data
-
-    @staticmethod
-    def filter_confidence(filtered_key_point_data, confidence_threshold: float = 0.5):
-
-        """
-        Filter data based on confidence, if confidence is less than 0.5 in a specific key point and time frame, then
-        the data in this time frame is set to 0 so as to exclude it from further analysis.
-        If you wish to include all data, set confidence_threshold to 0.
-
-        The columns are organized as follows: KP_1_x, KP_1_y, KP_1_confidence, KP_2_x, KP_2_y, KP_2_confidence, etc.
-
-        Args:
-            confidence_threshold (float): confidence threshold (default = 0.5)
-                defining the minimum confidence required for the data to be included in the analysis
-            """
-
-        #### Add case if filtered_key_point_data is the same as self.data
-        # check if confidence_threshold is a float
-        if type(confidence_threshold) != float:
-            raise TypeError("confidence_threshold must be a float")
-        # check if confidence_threshold is between 0 and 1
-        if confidence_threshold < 0 or confidence_threshold > 1:
-            raise ValueError("confidence_threshold must be between 0 and 1")
-        # check if filtered_key_point_data is a pandas DataFrame
-        if type(filtered_key_point_data) != pd.DataFrame:
-            raise TypeError("filtered_key_point_data must be a pandas DataFrame")
-        # check if filtered_key_point_data is empty
-        if filtered_key_point_data.empty:
-            raise ValueError("filtered_key_point_data cannot be empty")
-
-        for column in filtered_key_point_data.columns:
-            if "confidence" in column:
-                for index, confidence_per_time_stamp in enumerate(filtered_key_point_data[column]):
-                    # If confidence is less than TH, set the data in this time frame to 0 in both x and y coordinates
-                    if confidence_per_time_stamp < confidence_threshold:
-                        # set the values in the x and y rows in this key point to 0
-                        # find the index of the confidence column
-                        index_of_confidence_column = filtered_key_point_data.columns.get_loc(column)
-                        # find the index of the x and y columns in this key point
-                        x_column = filtered_key_point_data.columns[index_of_confidence_column - 2]
-                        y_column = filtered_key_point_data.columns[index_of_confidence_column - 1]
-                        # set the values in the x and y rows in this key point to 0
-                        filtered_key_point_data.loc[index, x_column] = 0
-                        filtered_key_point_data.loc[index, y_column] = 0
-
-        return filtered_key_point_data[
-            filtered_key_point_data.columns.drop(list(filtered_key_point_data.filter(regex='confidence')))]
-
-    @staticmethod
-    def calculate_change_in_distance(data):
-        """
-        Calculate the change in distance between two key points (for all key points).
-        Then calculate the change between consecutive time frames in the calculated data.
-
-        Parameters:
-            data (pd.DataFrame): The input data containing key points' coordinates at different time frames.
-
-        Returns:
-            pd.DataFrame: A DataFrame containing the change in distance between consecutive time frames for each pair of key points.
-        """
-        # check if data is empty
-        if data.empty:
-            raise ValueError("data cannot be empty")
-        # check if data is a pandas DataFrame
-        if type(data) != pd.DataFrame:
-            raise TypeError("data must be a pandas DataFrame")
-
-        distance_table = calculate_pairwise_distance(data)
-        change_in_distance_table = Storm.calculate_change_in_position_per_frame(distance_table)
-        return change_in_distance_table
-
-    @staticmethod
-    def calculate_change_in_position_per_frame(data):
-        """
-        Calculate the change in position between consecutive time frames for all key points.
-
-        Parameters:
-            data (pd.DataFrame): The input data containing key points' coordinates at different time frames.
-
-        Returns:
-            pd.DataFrame: A DataFrame containing the change in position between consecutive time frames for all key points.
-        """
-        # check if data is empty
-        if data.empty:
-            raise ValueError("data cannot be empty")
-        # check if data is a pandas DataFrame
-        if type(data) != pd.DataFrame:
-            raise TypeError("data must be a pandas DataFrame")
-
-        change_in_position_table = get_table_of_deltas_between_time_stamps_in_all_kps(data)
-        return change_in_position_table
+    
