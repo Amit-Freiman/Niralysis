@@ -101,7 +101,7 @@ class ISC:
 
         """
 
-        if df_A.shape[1] != df_B.shape[1]:
+        if by_areas is None and df_A.shape[1] != df_B.shape[1]:
             raise ValueError('df_A and df_B does not contain the same channels')
 
         if by_areas is not None:
