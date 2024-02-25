@@ -45,7 +45,7 @@ class HbOData:
          Set the storm's file's path
         @param storm_path:
         """
-        self.storm.check_sorm_fname(storm_path)
+        self.storm.check_storm_fname(storm_path)
         self.storm_path = storm_path
 
     def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.01,
