@@ -49,6 +49,10 @@ class EventsHandler:
         """
         if self.raw_data.annotations is None:
             self.spotted_events = None
+        
+        if self.raw_data.annotations.description.size == 0:
+            self.set_events_from_psychopy_table() # Method will be added in the next commit
+            return
 
         events = pd.DataFrame(columns=[EVENT_COLUMN, START_COLUMN, END_COLUMN, DURATION_COLUMN])
 
