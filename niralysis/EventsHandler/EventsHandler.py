@@ -51,7 +51,7 @@ class EventsHandler:
             self.spotted_events = None
         
         if self.raw_data.annotations.description.size == 0:
-            self.set_events_from_psychopy_table() # Method will be added in the next commit
+            self.set_events_from_psychopy_table()
             return
 
         events = pd.DataFrame(columns=[EVENT_COLUMN, START_COLUMN, END_COLUMN, DURATION_COLUMN])
@@ -92,3 +92,17 @@ class EventsHandler:
         @return: continuous events data frame
         """
         return self.continuous_events
+
+    def get_delay(self, begin_rec: int, begin_exp: int) -> int:
+        """
+        @param start_rec: time when the recording began
+        @param start_exp: time when the experiment began
+        @return: delay between the start of the recording and the start of the experiment
+        """
+        return begin_exp - begin_rec
+    
+    def set_events_from_psychopy_table(self) -> None:
+        """
+        Method will be added in the next commit
+        """
+        pass
