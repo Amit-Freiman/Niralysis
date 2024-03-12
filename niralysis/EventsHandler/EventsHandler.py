@@ -1,7 +1,6 @@
 import re
 import mne
 import pandas as pd
-import datetime
 from niralysis.utils.consts import *
 
 
@@ -93,23 +92,3 @@ class EventsHandler:
         @return: continuous events data frame
         """
         return self.continuous_events
-
-    def get_start_time(self) -> datetime.datetime:
-        """
-        @return: time when the recording began
-        """
-        return self.raw_data.info['meas_date']
-    
-    def get_delay(self, begin_rec: int, begin_exp: int) -> int:
-        """
-        @param start_rec: time when the recording began
-        @param start_exp: time when the experiment began
-        @return: delay between the start of the recording and the start of the experiment
-        """
-        return begin_exp - begin_rec
-    
-    def set_events_from_psychopy_table(self) -> None:
-        """
-        Method will be added in the next commit
-        """
-        pass
