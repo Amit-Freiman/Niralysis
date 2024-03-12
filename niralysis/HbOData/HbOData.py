@@ -6,7 +6,7 @@ from niralysis.Storm.Storm import Storm
 from niralysis.utils.consts import *
 from itertools import compress
 
-from niralysis.utils.data_menipulation import set_data_by_areas
+from niralysis.utils.data_manipulation import set_data_by_areas
 
 
 class HbOData:

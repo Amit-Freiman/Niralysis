@@ -1,6 +1,7 @@
 import re
 import mne
 import pandas as pd
+import datetime
 from niralysis.utils.consts import *
 
 
@@ -93,6 +94,12 @@ class EventsHandler:
         """
         return self.continuous_events
 
+    def get_start_time(self) -> datetime.datetime:
+        """
+        @return: time when the recording began
+        """
+        return self.raw_data.info['meas_date']
+    
     def get_delay(self, begin_rec: int, begin_exp: int) -> int:
         """
         @param start_rec: time when the recording began
