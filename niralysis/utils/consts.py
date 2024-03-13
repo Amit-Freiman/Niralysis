@@ -12,7 +12,11 @@ EVENT_COLUMN = 'Event'
 
 EVENT_BEGIN = 'begin'
 EVENT_END = 'end'
-
+EVENTS = ['begin:Yael', 'end:Yael', 'begin:Alon', 'end:Alon', 'begin:Roy', 'end:Roy', 'begin:Sahar', 'end:Sahar', 
+          'begin discussion:A','end discussion:A', 'begin discussion:B','end discussion:B', 'begin open discussion', 'end open discussion', 
+          'begin:Yael', 'end:Yael', 'begin:Alon', 'end:Alon', 'begin:Roy', 'end:Roy', 'begin:Sahar', 'end:Sahar']
+CANDIDATES = ['Roy', 'Sahar', 'Alon', 'Yael']
+DISCUSSION = ['discussion A', 'discussion B', 'open discussion']
 # fps
 
 FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement

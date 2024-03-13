@@ -20,6 +20,52 @@ def get_delay(begin_rec: datetime, begin_exp: datetime) -> int:
     delay = begin_exp - begin_rec
     return int(delay.total_seconds())
 
+def get_event_info(event, delay, psychopy, idx) -> tuple:
+    """
+    @param event: event's name
+    @param delay: delay between the start of the recording and the start of the experiment
+    @return: event's name, start time, end time, duration
+    """
+    if event in CANDIDATES:
+        event_name = event.split(':')[1]
+        event_type = event.split(':')[0]
+    elif event in DISCUSSION:
+        event_name = event.split(' ')[1] + event.split(' ')[2] if event.split(' ')[1] == 'open' else event.split(':')[1]
+        event_type = event.split(' ')[0]
+
+    if event_type == EVENT_BEGIN:
+        if event_name in CANDIDATES:
+            if idx < 11:
+                row = psychopy["candidate" == event_name][0]
+            else:
+                row = psychopy["candidate" == event_name][1]
+            onset = psychopy["image.started"][row]
+        elif event_name in DISCUSSION:
+            if event_name == 'open discussion':
+                # Find the row that has a value
+                row = psychopy["open.started"].notna()
+                onset = psychopy["open.started"][row]
+            elif event_name == 'A' or event_name == 'B':
+                row = psychopy["turn" == event_name][0]
+                onset = psychopy["turn_2.started"][row]
+    else:
+        if event_name in CANDIDATES:
+            if idx < 11:
+                row = psychopy["candidate" == event_name][0]
+            else:
+                row = psychopy["candidate" == event_name][1]
+            onset = psychopy["image_7.started"][row]
+        elif event_name in DISCUSSION:
+            if event_name == 'open discussion':
+                # Find the row that has a value
+                row = psychopy["report.started"].notna()
+                onset = psychopy["report.started"][row]
+            elif event_name == 'A' or event_name == 'B':
+                row = psychopy["turn" == event_name][0]
+                onset = psychopy["sound_1.started"][row]
+
+    return onset - delay
+    
 def set_events_from_psychopy_table(snirf_path,psychopy_path) -> None:
     """
     @param snief_path: path to the SNIRF file
