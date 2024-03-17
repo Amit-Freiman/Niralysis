@@ -67,7 +67,7 @@ class ISC:
         return channels_corr
 
     @staticmethod
-    def ISC_by_events(events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float = 0.02,
+    def ISC_by_events(A_events_table: pd.DataFrame, B_events_table: pd.DataFrame, df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float = 0.02,
                       by_areas: dict = None,
                       output_path=None):
         """
@@ -104,18 +104,24 @@ class ISC:
         if by_areas is None and df_A.shape[1] != df_B.shape[1]:
             raise ValueError('df_A and df_B does not contain the same channels')
 
+        if A_events_table[EVENT_COLUMN] != B_events_table[EVENT_COLUMN]:
+            raise ValueError('A_events_table and B_events_table does not contain the same events')
+
         if by_areas is not None:
             df_A = set_data_by_areas(df_A, by_areas)
             df_B = set_data_by_areas(df_B, by_areas)
 
-        events_labels = events_table[EVENT_COLUMN].tolist()
+        events_labels = A_events_table[EVENT_COLUMN].tolist()
         ISC_table = pd.DataFrame(index=events_labels, columns=df_A.columns[1:])
 
         for i in range(len(events_labels)):
-            starting_time = events_table[START_COLUMN][i]
-            ending_time = events_table[END_COLUMN][i]
-            A_event = df_A[(df_A[TIME_COLUMN] >= starting_time) & (df_A[TIME_COLUMN] <= ending_time)]
-            B_event = df_B[(df_A[TIME_COLUMN] >= starting_time) & (df_B[TIME_COLUMN] <= ending_time)]
+            A_starting_time = A_events_table[START_COLUMN][i]
+            A_ending_time = A_events_table[END_COLUMN][i]
+            A_event = df_A[(df_A[TIME_COLUMN] >= A_starting_time) & (df_A[TIME_COLUMN] <= A_ending_time)]
+
+            B_starting_time = B_events_table[START_COLUMN][i]
+            B_ending_time = B_events_table[END_COLUMN][i]
+            B_event = df_B[(df_A[TIME_COLUMN] >= B_starting_time) & (df_B[TIME_COLUMN] <= B_ending_time)]
 
             ISC_table.iloc[i] = ISC.ISC(A_event, B_event, sampling_rate)
 
