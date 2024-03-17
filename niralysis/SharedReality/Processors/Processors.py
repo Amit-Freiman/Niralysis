@@ -4,6 +4,9 @@ from niralysis.SharedReality.SharedReality import SharedReality
 from niralysis.SharedReality.Subject.Subject import Subject
 from niralysis.ISC.ISC import ISC
 from ..consts import *
+from ...EventsHandler.EventsHandler import EventsHandler
+from ...Niralysis import Niralysis
+from ...utils.add_annotations import set_events_from_psychopy_table
 
 
 def process_ISC_by_coupels(folder_path):
@@ -15,7 +18,6 @@ def process_ISC_by_coupels(folder_path):
 
     all_df = []
     all_df_dates = []
-
 
     # Iterate through all folders and subfolders
     for root, dirs, files in os.walk(folder_path):
@@ -36,6 +38,7 @@ def process_ISC_by_coupels(folder_path):
 
     main_table = pd.concat(all_df, keys=all_df_dates)
     return main_table
+
 
 def process_ISC_between_all_subjects(folder_path):
     """
@@ -70,9 +73,50 @@ def process_ISC_between_all_subjects(folder_path):
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
-        sum_subjects_exclude_i = (sum_subjects_data - data_frames[i]) / (len(data_frames) -1)
+        sum_subjects_exclude_i = (sum_subjects_data - data_frames[i]) / (len(data_frames) - 1)
         ISC_tables.append(ISC.ISC_by_events(subject.events_table, subject.subject.hbo_data.get_hbo_data(),
-                                      sum_subjects_exclude_i, by_areas=old_area_dict))
-
+                                            sum_subjects_exclude_i, by_areas=old_all_sizes))
 
     return sum(ISC_tables) / len(ISC_tables)
+
+
+def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
+    """
+
+    @param folder_path:
+    @return: table of differences between event duration in snirf and psychopy timetables
+    """
+
+    duration_diff_df = {}
+
+    # Iterate through all folders and subfolders.
+    for root, dirs, files in os.walk(folder_path):
+        # Check if there are two snirf files, one ending with -A and the other ending with -B
+
+        try:
+            snirf_files = [file for file in files if file.endswith(".snirf")]
+            snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
+            psyco_path = [file for file in files if file.endswith(".csv")]
+
+            if len(snirf_files_A) == 1 and len(psyco_path) == 1:
+                snirf_path = os.path.join(root, snirf_files_A[0])
+                psyco_path = os.path.join(root, psyco_path[0])
+
+                # creates timetable according to data from snirf file
+                subject_snirf = Niralysis(snirf_path)
+                subject_snirf.events_handler.set_continuous_events_frame()
+                snirf_event_table = subject_snirf.events_handler.get_continuous_events_frame()
+
+                # creates timetable according to data from snirf file
+                psyco_snirf = set_events_from_psychopy_table(snirf_path, psyco_path)
+                subject_psyco = EventsHandler(snirf_path)
+                subject_psyco.raw_data = psyco_snirf
+                subject_psyco.set_continuous_events_frame()
+                psyco_event_table = subject_psyco.get_continuous_events_frame()
+
+                duration_diff = psyco_event_table['Duration'] - snirf_event_table['Duration']
+                duration_diff_df[snirf_files_A[0]] = duration_diff.values
+        except:
+            continue
+
+    return pd.DataFrame(duration_diff_df)
