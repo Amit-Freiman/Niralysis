@@ -121,7 +121,7 @@ class ISC:
 
             B_starting_time = B_events_table[START_COLUMN][i]
             B_ending_time = B_events_table[END_COLUMN][i]
-            B_event = df_B[(df_A[TIME_COLUMN] >= B_starting_time) & (df_B[TIME_COLUMN] <= B_ending_time)]
+            B_event = df_B[(df_B[TIME_COLUMN] >= B_starting_time) & (df_B[TIME_COLUMN] <= B_ending_time)]
 
             ISC_table.iloc[i] = ISC.ISC(A_event, B_event, sampling_rate)
 
