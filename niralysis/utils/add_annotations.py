@@ -79,7 +79,7 @@ def get_event_info(event, delay, psychopy, idx) -> tuple:
 
     return onset - delay
     
-def set_events_from_psychopy_table(snirf_path,psychopy_path) -> None:
+def set_events_from_psychopy_table(snirf_path,psychopy_path) -> mne.io.snirf._snirf.RawSNIRF:
     """
     @param snief_path: path to the SNIRF file
     @param psychopy_path: path to the Psychopy file
@@ -91,6 +91,7 @@ def set_events_from_psychopy_table(snirf_path,psychopy_path) -> None:
     delay = get_delay(get_start_time(snirf), datetime.datetime.fromtimestamp(psychopy['StartTime'][0]))
     snirf.annotations.description = np.array(EVENTS)
     snirf.annotations.onset = np.array([get_event_info(event, delay, psychopy, idx) for idx, event in enumerate(EVENTS)], dtype=float)
+    return snirf
 
     
 
