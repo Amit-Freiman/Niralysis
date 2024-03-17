@@ -16,7 +16,7 @@ EVENTS = ['begin:Yael', 'end:Yael', 'begin:Alon', 'end:Alon', 'begin:Roy', 'end:
           'begin discussion:A','end discussion:A', 'begin discussion:B','end discussion:B', 'begin open discussion', 'end open discussion', 
           'begin:Yael', 'end:Yael', 'begin:Alon', 'end:Alon', 'begin:Roy', 'end:Roy', 'begin:Sahar', 'end:Sahar']
 CANDIDATES = ['Roy', 'Sahar', 'Alon', 'Yael']
-DISCUSSION = ['discussion A', 'discussion B', 'open discussion']
+DISCUSSION = ['A', 'B', 'open']
 # fps
 
 FRAMES_PER_SECOND = 30  # number of frames in a group for analysis of movement
