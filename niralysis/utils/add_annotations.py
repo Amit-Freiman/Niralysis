@@ -1,4 +1,5 @@
 import mne
+import os
 import pandas as pd
 import numpy as np
 import datetime
@@ -8,18 +9,24 @@ from datetime import timezone
 
 
 
-def get_start_time(raw_data) -> datetime.datetime:
+def get_rec_start_time(raw_data) -> datetime.datetime:
     """
     @return: time when the recording began
     """
     return raw_data.info['meas_date']
 
-def add_internal_delay(delay: int) -> int:
+def get_exp_start_time(psychopy_path) -> int:
     """
-    @param delay: delay to add (in seconds)
+    @param psychopy_path: path to the Psychopy file
+    @return: time when the experiment began
+    """
+    # The time when the file was last modified (for psychopy files that have not been modified, it is the time when the experiment ended)
+    final_time = os.path.getmtime(psychopy_path)
+    psychopy = pd.read_csv(psychopy_path)
+    # The amount of seconds that the experiment took
+    amount_of_secs = psychopy["image_3.started"].max() + psychopy["key_resp_4.rt"].max()
 
-    """
-    return delay
+    return datetime.datetime.fromtimestamp(final_time - amount_of_secs)
 
 def get_delay(begin_rec: datetime, begin_exp: datetime) -> int:
     """
@@ -30,7 +37,7 @@ def get_delay(begin_rec: datetime, begin_exp: datetime) -> int:
     begin_rec = begin_rec.replace(tzinfo=timezone.utc)
     begin_exp = begin_exp.replace(tzinfo=timezone.utc)
     delay = begin_rec - begin_exp
-    return int(delay.total_seconds() + add_internal_delay(20)) # Change 20 to the calculated delay (first event from A through LSL, minus the same event from A through psychopy)
+    return int(delay.total_seconds()) 
 
 def get_event_info(event, delay, psychopy, idx) -> tuple:
     """
@@ -55,7 +62,6 @@ def get_event_info(event, delay, psychopy, idx) -> tuple:
             onset = psychopy["image.started"][row]
         elif event_name in DISCUSSION:
             if event_name == 'open':
-                # Find the row that has a value
                 row = np.where(psychopy["open.started"].notna())[0][0]
                 onset = psychopy["open.started"][row]
             elif event_name == 'A' or event_name == 'B':
@@ -70,7 +76,6 @@ def get_event_info(event, delay, psychopy, idx) -> tuple:
             onset = psychopy["image_7.started"][row]
         elif event_name in DISCUSSION:
             if event_name == 'open':
-                # Find the row that has a value
                 row = np.where(psychopy["report.started"].notna())[0][0]
                 onset = psychopy["report.started"][row]
             elif event_name == 'A' or event_name == 'B':
@@ -79,7 +84,7 @@ def get_event_info(event, delay, psychopy, idx) -> tuple:
 
     return onset - delay
     
-def set_events_from_psychopy_table(snirf_path,psychopy_path) -> mne.io.snirf._snirf.RawSNIRF:
+def set_events_from_psychopy_table(snirf_path,psychopy_path): 
     """
     @param snief_path: path to the SNIRF file
     @param psychopy_path: path to the Psychopy file
@@ -88,7 +93,7 @@ def set_events_from_psychopy_table(snirf_path,psychopy_path) -> mne.io.snirf._sn
     """
     snirf = mne.io.read_raw_snirf(snirf_path, preload=True)
     psychopy = pd.read_csv(psychopy_path)
-    delay = get_delay(get_start_time(snirf), datetime.datetime.fromtimestamp(psychopy['StartTime'][0]))
+    delay = get_delay(get_rec_start_time(snirf), get_exp_start_time(psychopy_path))  #datetime.datetime.fromtimestamp(psychopy['StartTime'][0])
     snirf.annotations.description = np.array(EVENTS)
     snirf.annotations.onset = np.array([get_event_info(event, delay, psychopy, idx) for idx, event in enumerate(EVENTS)], dtype=float)
     return snirf
