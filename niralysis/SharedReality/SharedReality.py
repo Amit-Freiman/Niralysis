@@ -97,13 +97,13 @@ class SharedReality:
 
     def run(self, date) -> pd.DataFrame:
         self.subject_A = Niralysis(self.subject_A_path)
+        self.subject_B = Niralysis(self.subject_B_path)
+        self.subject_A.set_hbo_data(None, False, high_pass_freq=0.4)
         if not self.check_device_order():
             self.flip_device_order("A")
-        self.subject_B = Niralysis(self.subject_B_path)
+        self.subject_B.set_hbo_data(None, False, high_pass_freq=0.4)
         if not self.check_device_order():
             self.flip_device_order("B")
-        self.subject_A.set_hbo_data(None, False, high_pass_freq=0.4)
-        self.subject_B.set_hbo_data(None, False, high_pass_freq=0.4)
         self.subject_A.events_handler.set_continuous_events_frame()
         self.events_table = self.subject_A.events_handler.get_continuous_events_frame()
 
