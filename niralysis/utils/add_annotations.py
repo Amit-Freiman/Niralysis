@@ -37,7 +37,7 @@ def get_delay(begin_rec: datetime, begin_exp: datetime) -> int:
     begin_rec = begin_rec.replace(tzinfo=timezone.utc)
     begin_exp = begin_exp.replace(tzinfo=timezone.utc)
     delay = begin_rec - begin_exp
-    return int(delay.total_seconds()) 
+    return float(delay.total_seconds())
 
 def get_event_info(event, delay, psychopy, idx) -> tuple:
     """
@@ -98,7 +98,17 @@ def set_events_from_psychopy_table(snirf_path,psychopy_path):
     snirf.annotations.onset = np.array([get_event_info(event, delay, psychopy, idx) for idx, event in enumerate(EVENTS)], dtype=float)
     return snirf
 
+def set_events_from_rec_delay(subject_A_path, subject_B_path):
+
+    snirf_a = mne.io.read_raw_snirf(subject_A_path, preload=True)
+    snirf_b = mne.io.read_raw_snirf(subject_B_path, preload=True)
+    delay = get_delay(get_rec_start_time(snirf_a), get_rec_start_time(snirf_b))
+    if delay < 0:
+        snirf_b.annotations.onset = snirf_a.annotations.onset - abs(delay)
+    else:
+        snirf_b.annotations.onset = snirf_a.annotations.onset + abs(delay)
     
+    return snirf_b
 
     
 
