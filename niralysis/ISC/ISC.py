@@ -104,7 +104,7 @@ class ISC:
         if by_areas is None and df_A.shape[1] != df_B.shape[1]:
             raise ValueError('df_A and df_B does not contain the same channels')
 
-        if A_events_table[EVENT_COLUMN] != B_events_table[EVENT_COLUMN]:
+        if not A_events_table[EVENT_COLUMN].equals(B_events_table[EVENT_COLUMN]):
             raise ValueError('A_events_table and B_events_table does not contain the same events')
 
         if by_areas is not None:

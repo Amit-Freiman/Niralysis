@@ -22,8 +22,6 @@ def set_data_by_areas(df: pd.DataFrame, areas: dict) -> pd.DataFrame:
     data_by_area[TIME_COLUMN] = df[TIME_COLUMN]
     for area in areas.keys():
         valid_channels = [f"{channel} hbo" for channel in areas[area] if f"{channel} hbo" in df.columns]
-        if not valid_channels:
-            raise Exception(f"No Valid Channels for area {area}")
         data_by_area[area] =df[valid_channels].mean(axis=1)
 
     return data_by_area

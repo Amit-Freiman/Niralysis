@@ -13,6 +13,13 @@ class Subject:
             self.subject.hbo_data.set_data_by_areas(areas)
             self.data_by_ares = self.subject.hbo_data.get_hbo_data_by_areas()
 
+    def get_hbo_data(self):
+        return self.subject.hbo_data.get_hbo_data()
+
+    def set_hbo_data_columns(self, columns):
+        self.subject.hbo_data.columns = columns
+
+
     
 
 

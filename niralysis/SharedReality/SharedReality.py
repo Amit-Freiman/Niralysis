@@ -1,31 +1,16 @@
 import pandas as pd
 
+from .Subject.Subject import Subject
 from .consts import *
 from niralysis.ISC.ISC import ISC
 from niralysis.Niralysis import Niralysis
-
-A_PRE_CHOICE_1 = "A pre-choice first watch"
-A_PRE_CHOICE_2 = "A pre-choice second watch"
-B_PRE_CHOICE_1 = "B pre-choice first watch"
-B_PRE_CHOICE_2 = "B pre-choice second watch"
-POST_CHOICE_1 = "post-choice first watch"
-POST_CHOICE_2 = "post-choice second watch"
-CONTROL_1 = "control first watch"
-CONTROL_2 = "control second watch"
-TABLE_ROWS = [A_PRE_CHOICE_1, A_PRE_CHOICE_2, B_PRE_CHOICE_1, B_PRE_CHOICE_2, POST_CHOICE_1, POST_CHOICE_2, CONTROL_1,
-              CONTROL_2]
-UNIQUE_COMBINATION = "S1_D1"
-
-
-
 
 class SharedReality:
     def __init__(self, subject_A_path, subject_B_path):
         self.subject_A_path = subject_A_path
         self.subject_B_path = subject_B_path
-        self.subject_A = None
-        self.subject_B = None
-        self.events_table = None
+        self.subject_A = Subject(self.subject_A_path)
+        self.subject_B = Subject(self.subject_B_path)
         self.ISC_table = None
 
     def candidates_handler(self, date):
@@ -40,7 +25,7 @@ class SharedReality:
                    }
         return choices[date]
     
-    def check_device_order(self, unique_combination : str = UNIQUE_COMBINATION) -> bool:
+    def check_device_order(self, subject: str, unique_combination : str = UNIQUE_COMBINATION) -> bool:
         """
         Checks if the device order is correct (Old Brite, 20488/24302 and then the New Brite, 24053/24048)
         Verify by checking the channel combinations for one that is unique to this order
@@ -48,7 +33,13 @@ class SharedReality:
         @param unique_combination: A unique channel combination. Only if the devices are in the correct order will this combination be found
         @return: True if the devices are in the correct order, False otherwise
         """
-        for channel in self.subject_A.hbo_data.get_hbo_data().columns:
+        if subject == SUBJECT_A:
+            columns = self.subject_A.get_hbo_data().columns
+        elif subject == SUBJECT_B:
+            columns = self.subject_B.get_hbo_data().columns
+        else:
+            raise ValueError("Invalid subject")
+        for channel in columns:
             if unique_combination in channel:
                 return True
         return False
@@ -63,10 +54,10 @@ class SharedReality:
         S11_D9 -> S1_D1
         S12_D10 -> S2_D2
         """
-        if subject == "A":
-            data = self.subject_A.hbo_data.get_hbo_data()
-        elif subject == "B":
-            data = self.subject_B.hbo_data.get_hbo_data()
+        if subject == SUBJECT_A:
+            data = self.subject_A.get_hbo_data()
+        elif subject == SUBJECT_B:
+            data = self.subject_B.get_hbo_data()
         else:
             raise ValueError("Invalid subject")
 
@@ -90,25 +81,21 @@ class SharedReality:
         # Rename the columns in the original data
         data.columns = flipped_columns
         
-        if subject == "A":
-            self.subject_A.hbo_data.columns = flipped_columns
-        elif subject == "B":
-            self.subject_B.hbo_data.columns = flipped_columns
+        if subject == SUBJECT_A:
+            self.subject_A.set_hbo_data_columns(flipped_columns)
+        elif subject == SUBJECT_B:
+            self.subject_B.set_hbo_data_columns(flipped_columns)
 
     def run(self, date) -> pd.DataFrame:
-        self.subject_A = Niralysis(self.subject_A_path)
-        self.subject_B = Niralysis(self.subject_B_path)
-        self.subject_A.set_hbo_data(None, False, high_pass_freq=0.4)
-        if not self.check_device_order():
-            self.flip_device_order("A")
-        self.subject_B.set_hbo_data(None, False, high_pass_freq=0.4)
-        if not self.check_device_order():
-            self.flip_device_order("B")
-        self.subject_A.events_handler.set_continuous_events_frame()
-        self.events_table = self.subject_A.events_handler.get_continuous_events_frame()
 
-        self.ISC_table = ISC.ISC_by_events(self.events_table, self.subject_A.hbo_data.get_hbo_data(),
-                                           self.subject_B.hbo_data.get_hbo_data(), by_areas=old_area_dict)
+        if not self.check_device_order(SUBJECT_A):
+            self.flip_device_order(SUBJECT_A)
+        if not self.check_device_order(SUBJECT_B):
+            self.flip_device_order(SUBJECT_B)
+
+        self.ISC_table = ISC.ISC_by_events(self.subject_A.events_table, self.subject_B.events_table,
+                                           self.subject_A.get_hbo_data(), self.subject_B.get_hbo_data(),
+                                           by_areas=old_area_dict)
 
         A_pre_choice, B_pre_choice, post_choice, control = self.candidates_handler(date)
         df = pd.DataFrame(index=TABLE_ROWS, columns=self.ISC_table.columns)

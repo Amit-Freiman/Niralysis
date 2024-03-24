@@ -128,10 +128,10 @@ class HbOData:
 
     def is_storm_invalid_channel(self, channel_name: str, with_storm: bool) -> bool:
         """
-        Checks if channel should be filtered out do to invalid source or detectors locations
+        Checks if a channel should be filtered out do to invalid source or detectors locations
         @param channel_name:
-        @param with_storm: True to check if channel should be filtered out by storm
-        @return: True if channel should be filtered
+        @param with_storm: True to check if a channel should be filtered out by storm
+        @return: True if a channel should be filtered
         """
         if with_storm:
             source, detector, type = re.split(r"[ _]", channel_name)
