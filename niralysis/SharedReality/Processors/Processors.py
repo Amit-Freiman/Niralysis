@@ -60,22 +60,21 @@ def process_ISC_between_all_subjects(folder_path):
         if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
             path_A = os.path.join(root, snirf_files_A[0])
             path_B = os.path.join(root, snirf_files_B[0])
-            print(path_A)
             subject_A = Subject(path_A)
             subjects.append(subject_A)
-            data_frames.append(subject_A.subject.hbo_data.get_hbo_data())
-            print(path_B)
+            data_frames.append(subject_A.get_hbo_data())
             subject_B = Subject(path_B)
             subjects.append(subject_B)
-            data_frames.append(subject_A.subject.hbo_data.get_hbo_data())
+            data_frames.append(subject_A.get_hbo_data())
 
     sum_subjects_data = sum(data_frames)
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
         sum_subjects_exclude_i = (sum_subjects_data - data_frames[i]) / (len(data_frames) - 1)
-        ISC_tables.append(ISC.ISC_by_events(subject.events_table, subject.subject.hbo_data.get_hbo_data(),
-                                            sum_subjects_exclude_i, by_areas=old_all_sizes))
+        ISC_tables.append(ISC.ISC_by_events(subject.events_table, subject.events_table, subject.get_hbo_data(),
+                                      sum_subjects_exclude_i, by_areas=old_all_sizes))
+
 
     return sum(ISC_tables) / len(ISC_tables)
 

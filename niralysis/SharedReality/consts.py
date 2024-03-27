@@ -1,4 +1,4 @@
-old_all_sizes = {
+old_area_dict = {
     "left TPJ": ["S8_D8", "S9_D8", "S10_D8"],
     "right TPJ": ["S14_D10", "S15_D10", "S16_D10", "S17_D10"],
 
@@ -38,3 +38,19 @@ new_small = {
 
 new_large = {
 }
+
+SUBJECT_A = "A"
+SUBJECT_B = "B"
+
+
+A_PRE_CHOICE_1 = "A pre-choice first watch"
+A_PRE_CHOICE_2 = "A pre-choice second watch"
+B_PRE_CHOICE_1 = "B pre-choice first watch"
+B_PRE_CHOICE_2 = "B pre-choice second watch"
+POST_CHOICE_1 = "post-choice first watch"
+POST_CHOICE_2 = "post-choice second watch"
+CONTROL_1 = "control first watch"
+CONTROL_2 = "control second watch"
+TABLE_ROWS = [A_PRE_CHOICE_1, A_PRE_CHOICE_2, B_PRE_CHOICE_1, B_PRE_CHOICE_2, POST_CHOICE_1, POST_CHOICE_2, CONTROL_1,
+              CONTROL_2]
+UNIQUE_COMBINATION = "S1_D1"
