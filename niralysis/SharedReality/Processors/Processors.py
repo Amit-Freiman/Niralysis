@@ -61,9 +61,11 @@ def process_ISC_between_all_subjects(folder_path):
             path_A = os.path.join(root, snirf_files_A[0])
             path_B = os.path.join(root, snirf_files_B[0])
             subject_A = Subject(path_A)
+            subject_A.set_events_data()
             subjects.append(subject_A)
             data_frames.append(subject_A.get_hbo_data())
             subject_B = Subject(path_B)
+            subject_B.set_events_data()
             subjects.append(subject_B)
             data_frames.append(subject_A.get_hbo_data())
 
