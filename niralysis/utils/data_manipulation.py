@@ -44,3 +44,32 @@ def set_before_and_after_difference_table(ISC_table: pd.DataFrame, events: [str]
         difference_table.append(ISC_table.loc[event].iloc[0] - ISC_table.loc[event].iloc[1], index=event)
 
 
+
+def calculate_mean_table(data_tables: [pd.DataFrame]):
+    """
+    Function creates a data table witch the value of every cell is the mean value of the same cell in all the given
+    data tables.
+
+    @param data_tables: A list of data frames, all with the same structure (columns and indexes)
+    @return: A single data frame
+    """
+
+    mean_table = data_tables[0]
+    for data_table in data_tables[1:]:
+        mean_table += data_table
+
+    return mean_table / len(data_tables)
+
+def count_nan_values(df):
+    """
+    Count the number of NaN values in each column of the DataFrame.
+
+    Parameters:
+    df (DataFrame): The input DataFrame.
+
+    Returns:
+    dict: A dictionary where keys are column names and values are the count of NaN values in each column.
+    """
+    nan_counts = df.isnull().sum()  # Count NaN values in each column
+    nan_counts_dict = nan_counts.to_dict()  # Convert Series to dictionary
+    return nan_counts_dict
