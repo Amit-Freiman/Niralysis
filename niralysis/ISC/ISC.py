@@ -1,6 +1,9 @@
 import numpy
 import pandas as pd
 from numpy import mean, corrcoef, zeros
+
+from niralysis.SharedReality.Subject.Subject import Subject
+from niralysis.SharedReality.consts import EVENTS_TABLE_NAMES
 from niralysis.utils.consts import *
 from niralysis.utils.data_manipulation import set_data_by_areas
 
@@ -114,7 +117,8 @@ class ISC:
         events_labels = A_events_table[EVENT_COLUMN].tolist()
         ISC_table = pd.DataFrame(index=events_labels, columns=df_A.columns[1:])
 
-        for i in range(len(events_labels)):
+        for i in range(len(events_labels)): # to fix watching order is not necessarily the same, event index in a is
+            # not the same as in be (candidates videos)
             A_starting_time = A_events_table[START_COLUMN][i]
             A_ending_time = A_events_table[END_COLUMN][i]
             A_event = df_A[(df_A[TIME_COLUMN] >= A_starting_time) & (df_A[TIME_COLUMN] <= A_ending_time)]
@@ -124,6 +128,55 @@ class ISC:
             B_event = df_B[(df_B[TIME_COLUMN] >= B_starting_time) & (df_B[TIME_COLUMN] <= B_ending_time)]
 
             ISC_table.iloc[i] = ISC.ISC(A_event, B_event, sampling_rate)
+
+        if output_path is not None:
+            if not output_path.endswith('.csv'):
+                raise ValueError('Output path must end with .csv')
+            ISC_table.to_csv(output_path)
+
+        return ISC_table
+
+
+    @staticmethod
+    def subjects_ISC_by_events(subject_A: Subject, subject_B: Subject, sampling_rate: float = 0.02, output_path=None,
+                               use_default_events: bool = False):
+        """
+            Function to compute correlation between fNIRS measures of two Subject Class instances', while attending
+            a series of events,
+            Parameters:
+                subject_A (Subject):
+
+                subject_B (Subject): instance of Subject with contains subject's B data
+
+                sampling_rate: sampling rate in seconds. Used to divide the time series to 5 seconds bins.
+                by_areas : A dict that maps channels to brain areas, if given the ISC will be calculated between the mean
+                        HbO values of each brain's area channel, if None, the ISC will be calculated between each channel.
+                         key: brain area name, value: list of channels name, S<number>_D<number>
+                output_path: a pth to csv file, if given the function will save the returned data frame in to the
+                given path.
+
+            Returns:
+                pd.DataFrame: table of ISC values, each row is an ISC values of each channel at a certain event.
+
+        """
+        df_A = subject_A.get_hbo_data()
+
+        if use_default_events:
+            events_labels = EVENTS_TABLE_NAMES
+        else:
+            events_labels = subject_A.events_table[EVENT_COLUMN].tolist()
+        ISC_table = pd.DataFrame(index=events_labels, columns=df_A.columns[1:])
+
+        for index, event_name in enumerate(events_labels):
+            A_event = subject_A.get_event_data_table(index, event_name)
+            B_event = subject_B.get_event_data_table(index, event_name)
+            if A_event is None:
+                raise ValueError(f'subject A does not have the event {event_name}')
+            if B_event is None:
+                raise ValueError(f'subject B does not have the event {event_name}')
+
+
+            ISC_table.iloc[index] = ISC.ISC(A_event, B_event, sampling_rate)
 
         if output_path is not None:
             if not output_path.endswith('.csv'):

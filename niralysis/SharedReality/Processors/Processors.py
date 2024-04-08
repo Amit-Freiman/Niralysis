@@ -1,3 +1,4 @@
+import copy
 import os
 import pandas as pd
 from niralysis.SharedReality.SharedReality import SharedReality
@@ -7,6 +8,7 @@ from ..consts import *
 from ...EventsHandler.EventsHandler import EventsHandler
 from ...Niralysis import Niralysis
 from ...utils.add_annotations import set_events_from_psychopy_table
+from ...utils.data_manipulation import calculate_mean_table, count_nan_values
 
 
 def process_ISC_by_coupels(folder_path):
@@ -47,7 +49,6 @@ def process_ISC_between_all_subjects(folder_path):
     @return:
     """
     subjects = []
-    data_frames = []
 
     # Iterate through all folders and sub folders
     for root, dirs, files in os.walk(folder_path):
@@ -60,23 +61,21 @@ def process_ISC_between_all_subjects(folder_path):
         if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
             path_A = os.path.join(root, snirf_files_A[0])
             path_B = os.path.join(root, snirf_files_B[0])
-            subject_A = Subject(path_A)
+            subject_A = Subject(path_A, old_area_dict)
             subjects.append(subject_A)
-            data_frames.append(subject_A.get_hbo_data())
-            subject_B = Subject(path_B)
+            subject_B = Subject(path_B, old_area_dict)
             subjects.append(subject_B)
-            data_frames.append(subject_A.get_hbo_data())
 
-    sum_subjects_data = sum(data_frames)
+    merged_data = merge_event_data_table(subjects)
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
-        sum_subjects_exclude_i = (sum_subjects_data - data_frames[i]) / (len(data_frames) - 1)
-        ISC_tables.append(ISC.ISC_by_events(subject.events_table, subject.events_table, subject.get_hbo_data(),
-                                      sum_subjects_exclude_i, by_areas=old_all_sizes))
-
-
-    return sum(ISC_tables) / len(ISC_tables)
+        sum_subjects_exclude_i = mean_event_data_table(subject, merged_data, len(subjects) - 1)
+        new_subject = Subject("")
+        new_subject.events_data = sum_subjects_exclude_i
+        ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True))
+    main = calculate_mean_table(ISC_tables)
+    return main
 
 
 def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
@@ -119,3 +118,53 @@ def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
             continue
 
     return pd.DataFrame(duration_diff_df)
+
+
+def merge_event_data_table(subjects):
+    merged_data = { FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
+    for index, event in enumerate(EVENTS_TABLE_NAMES):
+        data = subjects[0].get_event_data_table(index, event)
+
+        for subject in subjects[1:]:
+            data = data.add(subject.get_event_data_table(index, event))
+
+        merged_data[EVENTS_CATEGORY[index]][event] = data
+
+    return merged_data
+
+
+def mean_event_data_table(subject, event_data_table, factor):
+    mean_data = copy.deepcopy(event_data_table)
+    for index, event in enumerate(EVENTS_TABLE_NAMES):
+        mean_data[EVENTS_CATEGORY[index]][event] -= subject.get_event_data_table(index, event)
+        mean_data[EVENTS_CATEGORY[index]][event] /= factor
+
+    return mean_data
+
+
+def process_nan_values(folder_path):
+    """
+    Processes the ISC between A and B and subjects of all the run folders within the given path.
+    @param folder_path:
+    @return:
+    """
+    subjects = {}
+    data_frames = []
+
+    # Iterate through all folders and sub folders
+    for root, dirs, files in os.walk(folder_path):
+        # Check if there are two snirf files, one ending with -A and the other ending with -B
+        snirf_files = [file for file in files if file.endswith(".snirf")]
+        snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
+        snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+
+        # If both -A and -B files exist in the folder, call the run function
+        if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
+            path_A = os.path.join(root, snirf_files_A[0])
+            path_B = os.path.join(root, snirf_files_B[0])
+            subject_A = Subject(path_A, old_area_dict)
+            subjects[subject_A.name] = count_nan_values(subject_A.get_hbo_data())
+            subject_B = Subject(path_B, old_area_dict)
+            subjects[subject_B.name] = count_nan_values(subject_B.get_hbo_data())
+
+    return subjects

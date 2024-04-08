@@ -42,7 +42,6 @@ new_large = {
 SUBJECT_A = "A"
 SUBJECT_B = "B"
 
-
 A_PRE_CHOICE_1 = "A pre-choice first watch"
 A_PRE_CHOICE_2 = "A pre-choice second watch"
 B_PRE_CHOICE_1 = "B pre-choice first watch"
@@ -54,3 +53,27 @@ CONTROL_2 = "control second watch"
 TABLE_ROWS = [A_PRE_CHOICE_1, A_PRE_CHOICE_2, B_PRE_CHOICE_1, B_PRE_CHOICE_2, POST_CHOICE_1, POST_CHOICE_2, CONTROL_1,
               CONTROL_2]
 UNIQUE_COMBINATION = "S1_D1"
+
+EVENTS_TABLE_NAMES = ["Yael", "Roy", "Sahar", "Alon", "discussion:A", "discussion:B", "open discussion", "Yael", "Roy",
+                      "Sahar",
+                      "Alon"]
+
+DATA = "data"
+NAME = "name"
+FIRST_WATCH = "first watch"
+SECOND_WATCH = "second watch"
+DISCUSSIONS = "discussion"
+
+EVENTS_CATEGORY = {
+    0: FIRST_WATCH,
+    1: FIRST_WATCH,
+    2: FIRST_WATCH,
+    3: FIRST_WATCH,
+    4: DISCUSSIONS,
+    5: DISCUSSIONS,
+    6: DISCUSSIONS,
+    7: SECOND_WATCH,
+    8: SECOND_WATCH,
+    9: SECOND_WATCH,
+    10: SECOND_WATCH
+}
