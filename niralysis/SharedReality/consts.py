@@ -39,6 +39,19 @@ new_small = {
 new_large = {
 }
 
+def templates_handler(self, date):
+    choices = {'31012024_0900': ('S','M'),
+            '31012024_1600': ('S','M'),
+            '24012024_1400': ('S','S'),
+            '01022024_1000': ('M','M'),
+            '01022024_1610': ('M','S'),
+            '06022024_1400': ('S','S'),
+            '07022024_1600': ('M','S')
+
+                }
+
+    return choices[date]
+
 SUBJECT_A = "A"
 SUBJECT_B = "B"
 

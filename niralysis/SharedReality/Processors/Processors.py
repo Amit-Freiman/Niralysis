@@ -61,9 +61,10 @@ def process_ISC_between_all_subjects(folder_path):
         if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
             path_A = os.path.join(root, snirf_files_A[0])
             path_B = os.path.join(root, snirf_files_B[0])
-            subject_A = Subject(path_A, old_area_dict)
+            date = root.split('\\')[-1]
+            subject_A = Subject(path_A, templates_handler(date)[0])
             subjects.append(subject_A)
-            subject_B = Subject(path_B, old_area_dict)
+            subject_B = Subject(path_B, templates_handler(date)[1])
             subjects.append(subject_B)
 
     merged_data = merge_event_data_table(subjects)

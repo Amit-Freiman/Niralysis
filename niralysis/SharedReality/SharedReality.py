@@ -14,13 +14,13 @@ class SharedReality:
         self.ISC_table = None
 
     def candidates_handler(self, date):
-        choices = {'26062023_1100': ('Roy', 'Sahar', 'Roy', 'Yael'),
-                   '19062023_1200': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '08062023_1400': ('Roy', 'Yael', 'Alon', 'Sahar'),
-                   '05062023_1200': ('Roy', 'Alon', 'Alon', 'Sahar'),
-                   '29052023_0800': ('Roy', 'Alon', 'Alon', 'Sahar'),
-                   '11052023_1530': ('Roy', 'Yael', 'Alon', 'Sahar'),
-                   '29062023_1615': ('Sahar', 'Roy', 'Alon', 'Yael'),
+        choices = {'31012024_0900': ('Roy', 'Roy', 'Sahar', 'Yael'),
+                   '31012024_1600': ('Roy', 'Alon', 'Roy', 'Yael'),
+                   '24012024_1400': ('Roy', 'Alon', 'Roy', 'Sahar'),
+                   '01022024_1000': ('Roy', 'Sahar', 'Roy', 'Yael'),
+                   '01022024_1610': ('Alon', 'Roy', 'Sahar', 'Yael'),
+                   '06022024_1400': ('Alon', 'Roy', 'Alon', 'Sahar'),
+                   '07022024_1600': ('Roy', 'Yael', 'Roy', 'Sahar')
 
                    }
         return choices[date]
