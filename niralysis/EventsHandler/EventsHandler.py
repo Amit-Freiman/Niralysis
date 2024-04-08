@@ -2,6 +2,7 @@ import re
 import mne
 import pandas as pd
 from niralysis.utils.consts import *
+from niralysis.utils.add_annotations import set_events_from_rec_delay
 
 
 class EventsHandler:
@@ -21,6 +22,7 @@ class EventsHandler:
 
     def __init__(self, path: str):
         self.raw_data = mne.io.read_raw_snirf(path, preload=True)
+        self.path = path
         self.continuous_events = None
         self.spotted_events = None
 
@@ -51,8 +53,9 @@ class EventsHandler:
             self.spotted_events = None
         
         if self.raw_data.annotations.description.size == 0:
-            self.set_events_from_psychopy_table()
-            return
+            # Take the path and change the B to A
+            path_a = self.path.replace("B", "A")
+            self.raw_data = set_events_from_rec_delay(path_a, self.path)
 
         events = pd.DataFrame(columns=[EVENT_COLUMN, START_COLUMN, END_COLUMN, DURATION_COLUMN])
 

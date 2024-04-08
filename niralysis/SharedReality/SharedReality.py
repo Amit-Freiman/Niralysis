@@ -15,7 +15,6 @@ class SharedReality:
 
     def candidates_handler(self, date):
         choices = {'31012024_0900': ('Roy', 'Roy', 'Sahar', 'Yael'),
-                   '31012024_1600': ('Roy', 'Alon', 'Roy', 'Yael'),
                    '24012024_1400': ('Roy', 'Alon', 'Roy', 'Sahar'),
                    '01022024_1000': ('Roy', 'Sahar', 'Roy', 'Yael'),
                    '01022024_1610': ('Alon', 'Roy', 'Sahar', 'Yael'),

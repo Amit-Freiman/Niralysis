@@ -39,9 +39,8 @@ new_small = {
 new_large = {
 }
 
-def templates_handler(self, date):
+def templates_handler(date):
     choices = {'31012024_0900': ('S','M'),
-            '31012024_1600': ('S','M'),
             '24012024_1400': ('S','S'),
             '01022024_1000': ('M','M'),
             '01022024_1610': ('M','S'),
