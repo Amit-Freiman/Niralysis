@@ -107,6 +107,8 @@ def set_events_from_rec_delay(subject_A_path, subject_B_path):
         snirf_b.annotations.onset = snirf_a.annotations.onset - abs(delay)
     else:
         snirf_b.annotations.onset = snirf_a.annotations.onset + abs(delay)
+
+    snirf_b.annotations.description = snirf_a.annotations.description
     
     return snirf_b
 

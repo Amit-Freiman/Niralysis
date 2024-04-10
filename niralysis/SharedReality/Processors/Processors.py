@@ -83,7 +83,6 @@ def process_ISC_between_all_subjects(folder_path):
             subjects.append(subject_A)
             subject_B = Subject(path_B, temp_dict_B)
             subjects.append(subject_B)
-
     merged_data = merge_event_data_table(subjects)
 
     ISC_tables = []
@@ -142,7 +141,6 @@ def merge_event_data_table(subjects):
     merged_data = { FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
     for index, event in enumerate(EVENTS_TABLE_NAMES):
         data = subjects[0].get_event_data_table(index, event)
-
         for subject in subjects[1:]:
             data = data.add(subject.get_event_data_table(index, event))
 

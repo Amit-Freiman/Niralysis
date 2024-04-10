@@ -20,7 +20,6 @@ class SharedReality:
                    '01022024_1610': ('Alon', 'Roy', 'Sahar', 'Yael'),
                    '06022024_1400': ('Alon', 'Roy', 'Alon', 'Sahar'),
                    '07022024_1600': ('Roy', 'Yael', 'Roy', 'Sahar')
-
                    }
         return choices[date]
     

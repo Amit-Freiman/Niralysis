@@ -52,7 +52,9 @@ class EventsHandler:
         if self.raw_data.annotations is None:
             self.spotted_events = None
         
-        if self.raw_data.annotations.description.size == 0:
+        # If snirf is B file, we need to take the A file and set the events
+        if self.path.endswith("B.snirf") or self.path.endswith("B.snirf.gz"):
+        # if self.raw_data.annotations.description.size == 0:
             # Take the path and change the B to A
             path_a = self.path.replace("B", "A")
             self.raw_data = set_events_from_rec_delay(path_a, self.path)
