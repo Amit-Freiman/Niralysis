@@ -65,8 +65,6 @@ class ISC:
 
         # Pearson's correlation coefficient of each channel
         for channel in range(n_channels):
-            # Print A_binned_signal.iloc[:, channel]
-            print(A_binned_signal.iloc[:, channel])
             channels_corr[channel] = corrcoef(A_binned_signal.iloc[:, channel], B_binned_signal.iloc[:, channel])[0, 1]
 
         return channels_corr
