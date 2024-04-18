@@ -25,7 +25,7 @@ new_medium = {
 
 new_small = {
     "left TPJ": ["S16_D12", "S16_D14", "S16_D11"],
-    "right TPJ": ["S2_D1", "S_D1", "S1_D1"],
+    "right TPJ": ["S2_D1", "S3_D1", "S1_D1"],
 
     "left lPFC": ["S12_D9", "S9_D7", "S9_D8", "S10_D8", "S12-D10"],
     "left mPFC": ["S9_D5", "S9_D6", "S10_D6", "S8_D5"],
