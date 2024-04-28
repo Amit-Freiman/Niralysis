@@ -96,7 +96,7 @@ class HbOData:
 
         # evaluate the quality of the data using a scalp coupling index (SCI)
         sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
-        self.bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
+        self.bad_channels = list(compress(processed_data.ch_names, sci < 0.7))
         processed_data = processed_data.drop_channels(self.bad_channels)
 
         # apply temporal derivative distribution repair (tddr) to remove motion artifacts

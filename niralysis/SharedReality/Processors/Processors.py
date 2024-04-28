@@ -42,6 +42,27 @@ def process_ISC_by_coupels(folder_path):
     return main_table
 
 
+def subject_handler(root, name, subject, subjects_list):
+    path = os.path.join(root, name)
+    date = root.split('\\')[-1]
+    templates = templates_handler(date)
+    if templates[subject] == 'S':
+        temp_dict = new_small
+    elif templates[subject] == 'M':
+        temp_dict = new_medium
+    elif templates[subject] == 'L':
+        temp_dict = None
+    else:
+        temp_dict = old_area_dict
+
+    if temp_dict is not None:
+        try:
+            subject = Subject(path, temp_dict)
+            subjects_list.append(subject)
+        except Exception as e:
+            print(f"{name} failed: {e}")
+
+
 def process_ISC_between_all_subjects(folder_path):
     """
     Processes the ISC between A and B and subjects of all the run folders within the given path.
@@ -58,31 +79,12 @@ def process_ISC_between_all_subjects(folder_path):
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
 
         # If both -A and -B files exist in the folder, call the run function
-        if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
-            path_A = os.path.join(root, snirf_files_A[0])
-            path_B = os.path.join(root, snirf_files_B[0])
-            date = root.split('\\')[-1]
-            templates = templates_handler(date)
-            if templates[0] == 'S':
-                temp_dict_A = new_small
-            elif templates[0] == 'M':
-                temp_dict_A = new_medium
-            elif templates[0] == 'L':
-                temp_dict_A = new_large
-            else:
-                temp_dict_A = old_area_dict
-            if templates[1] == 'S':
-                temp_dict_B = new_small
-            elif templates[1] == 'M':
-                temp_dict_B = new_medium
-            elif templates[1] == 'L':
-                temp_dict_B = new_large
-            else:
-                temp_dict_B = old_area_dict
-            subject_A = Subject(path_A, temp_dict_A)
-            subjects.append(subject_A)
-            subject_B = Subject(path_B, temp_dict_B)
-            subjects.append(subject_B)
+        if len(snirf_files_A) == 1:
+            subject_handler(root, snirf_files_A[0], 0, subjects)
+
+        if len(snirf_files_B) == 1:
+            subject_handler(root, snirf_files_B[0], 1, subjects)
+
     merged_data = merge_event_data_table(subjects)
 
     ISC_tables = []
@@ -92,6 +94,8 @@ def process_ISC_between_all_subjects(folder_path):
         new_subject.events_data = sum_subjects_exclude_i
         ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True))
     main = calculate_mean_table(ISC_tables)
+    main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
+
     return main
 
 
@@ -138,7 +142,7 @@ def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
 
 
 def merge_event_data_table(subjects):
-    merged_data = { FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
+    merged_data = {FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
     for index, event in enumerate(EVENTS_TABLE_NAMES):
         data = subjects[0].get_event_data_table(index, event)
         for subject in subjects[1:]:
