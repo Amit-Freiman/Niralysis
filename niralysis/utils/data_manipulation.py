@@ -1,5 +1,6 @@
 import pandas as pd
 
+from niralysis.SharedReality.consts import AREA_VALIDATION
 from niralysis.utils.consts import TIME_COLUMN
 
 
@@ -19,10 +20,15 @@ def set_data_by_areas(df: pd.DataFrame, areas: dict) -> pd.DataFrame:
 
     """
     data_by_area = pd.DataFrame()
+    channels = {}
     data_by_area[TIME_COLUMN] = df[TIME_COLUMN]
     for area in areas.keys():
         valid_channels = [f"{channel} hbo" for channel in areas[area] if f"{channel} hbo" in df.columns]
         data_by_area[area] =df[valid_channels].mean(axis=1)
+        channels[area] = 1 if len(valid_channels) > 0 else 0
+
+    channels[TIME_COLUMN] = 1
+    data_by_area.loc[AREA_VALIDATION] = channels
 
     return data_by_area
 
@@ -45,7 +51,7 @@ def set_before_and_after_difference_table(ISC_table: pd.DataFrame, events: [str]
 
 
 
-def calculate_mean_table(data_tables: [pd.DataFrame]):
+def calculate_mean_table(data_tables: [pd.DataFrame], factor):
     """
     Function creates a data table witch the value of every cell is the mean value of the same cell in all the given
     data tables.
@@ -54,11 +60,11 @@ def calculate_mean_table(data_tables: [pd.DataFrame]):
     @return: A single data frame
     """
 
-    mean_table = data_tables[0]
+    mean_table = data_tables[0].fillna(0)
     for data_table in data_tables[1:]:
-        mean_table += data_table
+        mean_table += data_table.fillna(0)
 
-    return mean_table / len(data_tables)
+    return mean_table / factor
 
 def count_nan_values(df):
     """
