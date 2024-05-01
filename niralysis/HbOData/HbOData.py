@@ -26,7 +26,7 @@ class HbOData:
 
     """
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, raw_data = None):
         self.user_data_frame = None
         self.all_data_frame = None
         self.raw_data = mne.io.read_raw_snirf(path, preload=True)
@@ -100,7 +100,7 @@ class HbOData:
         processed_data = processed_data.drop_channels(self.bad_channels)
 
         # apply temporal derivative distribution repair (tddr) to remove motion artifacts
-        processed_data = mne.preprocessing.nirs.tddr(processed_data)
+        # processed_data = mne.preprocessing.nirs.tddr(processed_data)
 
         # filter low and high frequency bands
         filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  # N-EQ

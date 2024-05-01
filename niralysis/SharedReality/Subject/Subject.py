@@ -11,9 +11,10 @@ class Subject:
             self.path = path
             self.name = path.split('\\')[-1].replace('.snirf', '')
             self.subject = Niralysis(path)
-            self.subject.set_hbo_data(None, False, high_pass_freq=0.4)
             self.subject.events_handler.set_continuous_events_frame()
             self.events_table = self.subject.events_handler.get_continuous_events_frame()
+            
+            self.subject.set_hbo_data(None, False, high_pass_freq=0.4)
             self.events_data = None
             self.data_by_ares = False
             if areas is not None:
