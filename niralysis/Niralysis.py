@@ -87,7 +87,7 @@ class Niralysis:
 
     ######## HbO ########
 
-    def set_hbo_data(self, channels: [int], with_storm: bool, low_pass_freq=0.01, high_pass_freq=0.5, path_length_factor=0.6):
+    def set_full_hbo_data(self, channels: [int], with_storm: bool, low_pass_freq=0.01, high_pass_freq=0.5, path_length_factor=0.6):
         self.hbo_data.preprocess(channels, with_storm, low_pass_freq, high_pass_freq, path_length_factor)
 
     ######## STORM ########
