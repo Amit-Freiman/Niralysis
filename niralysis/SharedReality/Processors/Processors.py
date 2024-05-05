@@ -4,6 +4,7 @@ import pandas as pd
 from niralysis.SharedReality.SharedReality import SharedReality
 from niralysis.SharedReality.Subject.Subject import Subject
 from niralysis.ISC.ISC import ISC
+from ..Subject.PreprocessingInstructions import PreprocessingInstructions
 from ..consts import *
 from ...EventsHandler.EventsHandler import EventsHandler
 from ...Niralysis import Niralysis
@@ -43,7 +44,7 @@ def process_ISC_by_coupels(folder_path):
     return main_table
 
 
-def subject_handler(root, name, subject, subjects_list):
+def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
     path = os.path.join(root, name)
     date = root.split('\\')[-1]
     templates = templates_handler(date)
@@ -58,7 +59,7 @@ def subject_handler(root, name, subject, subjects_list):
 
     if temp_dict is not None:
         try:
-            subject = Subject(path, temp_dict, preprocess_by_events=True)
+            subject = Subject(path, temp_dict, preprocess_by_events=preprocess_by_events, preprocessing_instructions=PreprocessingInstructions())
             subjects_list.append(subject)
         except Exception as e:
             print(f"{name} failed: {e}")
@@ -79,12 +80,12 @@ def process_ISC_between_all_subjects(folder_path):
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
 
-        # If both -A and -B files exist in the folder, call the run function
+        # If  -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) == 1:
-            subject_handler(root, snirf_files_A[0], 0, subjects)
+            subject_handler(root, snirf_files_A[0], 0, subjects, True)
 
         if len(snirf_files_B) == 1:
-            subject_handler(root, snirf_files_B[0], 1, subjects)
+            subject_handler(root, snirf_files_B[0], 1, subjects, True)
 
     merged_data = merge_event_data_table(subjects)
     factor = get_subjects_factor(subjects)

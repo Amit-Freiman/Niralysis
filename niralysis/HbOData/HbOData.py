@@ -26,10 +26,10 @@ class HbOData:
 
     """
 
-    def __init__(self, path: str, raw_data = None):
-        self.user_data_frame = None
+    def __init__(self, path: str, raw_data=None, user_data_frame=None):
+        self.user_data_frame = user_data_frame
         self.all_data_frame = None
-        self.raw_data = mne.io.read_raw_snirf(path, preload=True)
+        self.raw_data = mne.io.read_raw_snirf(path, preload=True) if path else raw_data
         self.concentrated_data = None
         self.storm_path = None
         self.storm = Storm(path)
@@ -37,7 +37,6 @@ class HbOData:
         self.invalid_detec = None
         self.bad_channels = None
         self.data_by_areas = None
-
 
     def set_storm_path(self, storm_path: str):
         """
@@ -124,10 +123,10 @@ class HbOData:
         self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
 
         return self.user_data_frame
-    
-    def preprocess_by_event(raw_data_for_event, channels: Optional[int], low_freq: float = 0.01,
-                   high_freq: float = 0.5,
-                   path_length_factor: float = 0.6, scale: float = 0.1):
+
+    def preprocess_by_event(self, raw_data_for_event, channels: Optional[int], low_freq: float = 0.01,
+                            high_freq: float = 0.5,
+                            path_length_factor: float = 0.6, scale: float = 0.1):
         """
         Preprocess HbO measurements from a raw fNIRS signals within a SNIRF for one event, across all channels.
         Preprocessing includes:
@@ -203,14 +202,6 @@ class HbOData:
         if self.user_data_frame is None:
             raise Exception("No Data Frame is available, make sure to create data frame by the preprocess function")
         return self.user_data_frame
-
-    def set_data_by_areas(user_data_frame, areas: dict):
-        if user_data_frame is None:
-            raise Exception("No Data Frame is available, make sure to create data frame by the preprocess function")
-
-        data_by_areas = set_data_by_areas(user_data_frame, areas)
-
-        return  data_by_areas
 
     def get_hbo_data_by_areas(self):
         if self.data_by_areas is None:
