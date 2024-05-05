@@ -23,10 +23,13 @@ class Subject:
             else:
                 self.subject.hbo_data.raw_data = 0
 
-            if areas is not None:
-                self.subject.hbo_data.set_data_by_areas(areas)
-                self.data_by_ares = True
             self.set_events_data()
+
+            if areas is not None:
+                self.events_data = HbOData.set_data_by_areas(self.events_data, areas)
+                self.data_by_ares = True
+
+            
 
     def get_hbo_data(self):
         if self.data_by_ares:

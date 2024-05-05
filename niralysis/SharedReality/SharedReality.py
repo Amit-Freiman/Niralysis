@@ -9,8 +9,8 @@ class SharedReality:
     def __init__(self, subject_A_path, subject_B_path):
         self.subject_A_path = subject_A_path
         self.subject_B_path = subject_B_path
-        self.subject_A = Subject(self.subject_A_path)
-        self.subject_B = Subject(self.subject_B_path)
+        self.subject_A = Subject(self.subject_A_path, preprocess_by_events=True)
+        self.subject_B = Subject(self.subject_B_path, preprocess_by_events=True)
         self.ISC_table = None
 
     def candidates_handler(self, date):

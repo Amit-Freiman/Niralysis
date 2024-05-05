@@ -58,7 +58,7 @@ def subject_handler(root, name, subject, subjects_list):
 
     if temp_dict is not None:
         try:
-            subject = Subject(path, temp_dict)
+            subject = Subject(path, temp_dict, preprocess_by_events=True)
             subjects_list.append(subject)
         except Exception as e:
             print(f"{name} failed: {e}")

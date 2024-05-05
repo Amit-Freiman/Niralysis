@@ -123,7 +123,6 @@ class HbOData:
         self.all_data_frame = data_frame
         self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
 
-        print(self.user_data_frame)
         return self.user_data_frame
     
     def preprocess_by_event(raw_data_for_event, channels: Optional[int], low_freq: float = 0.01,
@@ -161,7 +160,6 @@ class HbOData:
         sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
         bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
         processed_data = processed_data.drop_channels(bad_channels)
-
         # apply temporal derivative distribution repair (tddr) to remove motion artifacts
         processed_data = mne.preprocessing.nirs.tddr(processed_data)
 
@@ -206,11 +204,13 @@ class HbOData:
             raise Exception("No Data Frame is available, make sure to create data frame by the preprocess function")
         return self.user_data_frame
 
-    def set_data_by_areas(self, areas: dict):
-        if self.user_data_frame is None:
+    def set_data_by_areas(user_data_frame, areas: dict):
+        if user_data_frame is None:
             raise Exception("No Data Frame is available, make sure to create data frame by the preprocess function")
 
-        self.data_by_areas = set_data_by_areas(self.user_data_frame, areas)
+        data_by_areas = set_data_by_areas(user_data_frame, areas)
+
+        return  data_by_areas
 
     def get_hbo_data_by_areas(self):
         if self.data_by_areas is None:
