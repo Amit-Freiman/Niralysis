@@ -4,6 +4,7 @@ import pandas as pd
 from niralysis.SharedReality.SharedReality import SharedReality
 from niralysis.SharedReality.Subject.Subject import Subject
 from niralysis.ISC.ISC import ISC
+from ..Event.Event import Event
 from ..Subject.PreprocessingInstructions import PreprocessingInstructions
 from ..consts import *
 from ...EventsHandler.EventsHandler import EventsHandler
@@ -87,17 +88,15 @@ def process_ISC_between_all_subjects(folder_path):
         if len(snirf_files_B) == 1:
             subject_handler(root, snirf_files_B[0], 1, subjects, True)
 
-    merged_data = merge_event_data_table(subjects)
-    # factor = get_subjects_factor(subjects)
+    merged_data, factor = merge_event_data_table(subjects)
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
-        sum_subjects_exclude_i = mean_event_data_table(subject, merged_data,
-                                                       0)
+        sum_subjects_exclude_i = mean_event_data_table(subject, merged_data)
         new_subject = Subject("")
         new_subject.events_data = sum_subjects_exclude_i
-        ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True))
-    main = calculate_mean_table(ISC_tables, 0)
+        ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, by_event=True))
+    main = calculate_mean_table(ISC_tables, factor)
     main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
 
     return main
@@ -147,15 +146,17 @@ def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
 
 def merge_event_data_table(subjects):
     merged_data = {FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
+    factor = pd.DataFrame(index=EVENTS_TABLE_NAMES, columns=subjects[0].get_event_data_table(0, EVENTS_TABLE_NAMES[0]).columns)
 
     for index, event in enumerate(EVENTS_TABLE_NAMES):
         data = subjects[0].get_event_data_table(index, event).fillna(0)
         for subject in subjects[1:]:
             data = data.add(subject.get_event_data_table(index, event).fillna(0))
 
-        merged_data[EVENTS_CATEGORY[index]][event] = data
-
-    return merged_data
+        merged_data[EVENTS_CATEGORY[index]][event] = Event(event, data_by_area=data.fillna(0))
+        factor.iloc[index] = data.loc[AREA_VALIDATION]
+    factor.drop(columns=[TIME_COLUMN], inplace=True)
+    return merged_data, factor
 
 def get_subjects_factor(subjects: [Subject]):
     subjects_factor = subjects[0].get_hbo_data().loc[AREA_VALIDATION]
@@ -163,11 +164,11 @@ def get_subjects_factor(subjects: [Subject]):
         subjects_factor += subject.get_hbo_data().loc[AREA_VALIDATION]
     return subjects_factor
 
-def mean_event_data_table(subject, event_data_table, factor):
+def mean_event_data_table(subject, event_data_table):
     mean_data = copy.deepcopy(event_data_table)
     for index, event in enumerate(EVENTS_TABLE_NAMES):
-        mean_data[EVENTS_CATEGORY[index]][event] -= subject.get_event_data_table(index, event).fillna(0)
-        mean_data[EVENTS_CATEGORY[index]][event] /= mean_data[EVENTS_CATEGORY[index]][event].loc[AREA_VALIDATION]
+        mean_data[EVENTS_CATEGORY[index]][event].data.data_by_areas -= subject.get_event_data_table(index, event).fillna(0)
+        mean_data[EVENTS_CATEGORY[index]][event].data.data_by_areas /= mean_data[EVENTS_CATEGORY[index]][event].get_data_by_areas().loc[AREA_VALIDATION]
 
     return mean_data
 

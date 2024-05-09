@@ -139,7 +139,7 @@ class ISC:
 
     @staticmethod
     def subjects_ISC_by_events(subject_A: Subject, subject_B: Subject, sampling_rate: float = 0.02, output_path=None,
-                               use_default_events: bool = False):
+                               use_default_events: bool = False, by_event: bool = False):
         """
             Function to compute correlation between fNIRS measures of two Subject Class instances', while attending
             a series of events,
@@ -159,7 +159,7 @@ class ISC:
                 pd.DataFrame: table of ISC values, each row is an ISC values of each channel at a certain event.
 
         """
-        df_A = subject_A.get_hbo_data()
+        df_A = subject_A.get_event_data_table(0, subject_A.events_table[EVENT_COLUMN][0]) if by_event else subject_A.get_hbo_data()
 
         if use_default_events:
             events_labels = EVENTS_TABLE_NAMES

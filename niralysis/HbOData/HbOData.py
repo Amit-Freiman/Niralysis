@@ -26,7 +26,7 @@ class HbOData:
 
     """
 
-    def __init__(self, path: str, raw_data=None, user_data_frame=None):
+    def __init__(self, path: str, raw_data=None, user_data_frame=None, data_by_area=None):
         self.user_data_frame = user_data_frame
         self.all_data_frame = None
         self.raw_data = mne.io.read_raw_snirf(path, preload=True) if path else raw_data
@@ -36,7 +36,7 @@ class HbOData:
         self.invalid_sourc = None
         self.invalid_detec = None
         self.bad_channels = None
-        self.data_by_areas = None
+        self.data_by_areas = data_by_area
 
     def set_storm_path(self, storm_path: str):
         """

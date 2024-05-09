@@ -6,9 +6,9 @@ from niralysis.utils.data_manipulation import set_data_by_areas
 
 
 class Event:
-    def __init__(self, name, raw_data=None, data_frame=None):
+    def __init__(self, name, raw_data=None, data_frame=None, data_by_area=None):
         self.name = name
-        self.data = HbOData('', raw_data, data_frame)
+        self.data = HbOData('', raw_data, data_frame, data_by_area)
 
     def preprocess(self, instructions: PreprocessingInstructions):
         self.data.preprocess(instructions.channels, with_storm=False, low_freq=instructions.low_freq,
