@@ -88,16 +88,16 @@ def process_ISC_between_all_subjects(folder_path):
             subject_handler(root, snirf_files_B[0], 1, subjects, True)
 
     merged_data = merge_event_data_table(subjects)
-    factor = get_subjects_factor(subjects)
+    # factor = get_subjects_factor(subjects)
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
         sum_subjects_exclude_i = mean_event_data_table(subject, merged_data,
-                                                       factor - subject.get_hbo_data().loc[AREA_VALIDATION])
+                                                       0)
         new_subject = Subject("")
         new_subject.events_data = sum_subjects_exclude_i
         ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True))
-    main = calculate_mean_table(ISC_tables, factor.drop(TIME_COLUMN))
+    main = calculate_mean_table(ISC_tables, 0)
     main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
 
     return main
@@ -167,7 +167,7 @@ def mean_event_data_table(subject, event_data_table, factor):
     mean_data = copy.deepcopy(event_data_table)
     for index, event in enumerate(EVENTS_TABLE_NAMES):
         mean_data[EVENTS_CATEGORY[index]][event] -= subject.get_event_data_table(index, event).fillna(0)
-        mean_data[EVENTS_CATEGORY[index]][event] /= factor
+        mean_data[EVENTS_CATEGORY[index]][event] /= mean_data[EVENTS_CATEGORY[index]][event].loc[AREA_VALIDATION]
 
     return mean_data
 

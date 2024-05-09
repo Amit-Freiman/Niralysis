@@ -118,6 +118,7 @@ FIRST_WATCH = "first watch"
 SECOND_WATCH = "second watch"
 DISCUSSIONS = "discussion"
 AREA_VALIDATION = "area validation"
+VALID_CHANNELS = "valid channels"
 
 EVENTS_CATEGORY = {
     0: FIRST_WATCH,
