@@ -1,6 +1,6 @@
 import pandas as pd
 
-from niralysis.SharedReality.consts import AREA_VALIDATION
+from niralysis.SharedReality.consts import AREA_VALIDATION, VALID_CHANNELS
 from niralysis.utils.consts import TIME_COLUMN
 
 
@@ -20,15 +20,19 @@ def set_data_by_areas(df: pd.DataFrame, areas: dict) -> pd.DataFrame:
 
     """
     data_by_area = pd.DataFrame()
-    channels = {}
+    valid_area = {}
+    valid_channels_count = {}
     data_by_area[TIME_COLUMN] = df[TIME_COLUMN]
     for area in areas.keys():
         valid_channels = [f"{channel} hbo" for channel in areas[area] if f"{channel} hbo" in df.columns]
         data_by_area[area] =df[valid_channels].mean(axis=1)
-        channels[area] = 1 if len(valid_channels) > 0 else 0
+        valid_area[area] = 1 if len(valid_channels) > 0 else 0
+        valid_channels_count[area] = len(valid_channels)
 
-    channels[TIME_COLUMN] = 1
-    data_by_area.loc[AREA_VALIDATION] = channels
+    valid_area[TIME_COLUMN] = 1
+    valid_channels_count[TIME_COLUMN] = 1
+    data_by_area.loc[AREA_VALIDATION] = valid_area
+    data_by_area.loc[VALID_CHANNELS] = valid_channels_count
 
     return data_by_area
 
