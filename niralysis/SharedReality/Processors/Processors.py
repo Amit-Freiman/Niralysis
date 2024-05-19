@@ -66,8 +66,8 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
             print(f"{name} failed: {e}")
 
 
-def process_ISC_between_all_subjects(folder_path):
-    """
+def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
+    """s
     Processes the ISC between A and B and subjects of all the run folders within the given path.
     @param folder_path:
     @return:
@@ -83,19 +83,19 @@ def process_ISC_between_all_subjects(folder_path):
 
         # If  -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) == 1:
-            subject_handler(root, snirf_files_A[0], 0, subjects, True)
+            subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
         if len(snirf_files_B) == 1:
-            subject_handler(root, snirf_files_B[0], 1, subjects, True)
+            subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
 
-    merged_data, factor = merge_event_data_table(subjects)
+    merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
-        sum_subjects_exclude_i = mean_event_data_table(subject, merged_data)
+        sum_subjects_exclude_i = mean_event_data_table(subject, merged_data, factor if not preprocess_by_event else None)
         new_subject = Subject("")
         new_subject.events_data = sum_subjects_exclude_i
-        ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, by_event=True))
+        ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event))
     main = calculate_mean_table(ISC_tables, factor)
     main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
 
@@ -144,7 +144,7 @@ def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
     return pd.DataFrame(duration_diff_df)
 
 
-def merge_event_data_table(subjects):
+def merge_event_data_table(subjects, preprocess_by_event: bool = False):
     merged_data = {FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
     factor = pd.DataFrame(index=EVENTS_TABLE_NAMES, columns=subjects[0].get_event_data_table(0, EVENTS_TABLE_NAMES[0]).columns)
 
@@ -154,9 +154,9 @@ def merge_event_data_table(subjects):
             data = data.add(subject.get_event_data_table(index, event).fillna(0))
 
         merged_data[EVENTS_CATEGORY[index]][event] = Event(event, data_by_area=data.fillna(0))
-        factor.iloc[index] = data.loc[AREA_VALIDATION]
+        factor.iloc[index] = data.loc[AREA_VALIDATION] if preprocess_by_event else None
     factor.drop(columns=[TIME_COLUMN], inplace=True)
-    return merged_data, factor
+    return merged_data, factor if preprocess_by_event else get_subjects_factor(subjects)
 
 def get_subjects_factor(subjects: [Subject]):
     subjects_factor = subjects[0].get_hbo_data().loc[AREA_VALIDATION]
@@ -164,11 +164,12 @@ def get_subjects_factor(subjects: [Subject]):
         subjects_factor += subject.get_hbo_data().loc[AREA_VALIDATION]
     return subjects_factor
 
-def mean_event_data_table(subject, event_data_table):
+def mean_event_data_table(subject, event_data_table, factor =None):
     mean_data = copy.deepcopy(event_data_table)
     for index, event in enumerate(EVENTS_TABLE_NAMES):
+        factor = factor if factor is not None else mean_data[EVENTS_CATEGORY[index]][event].get_data_by_areas().loc[AREA_VALIDATION]
         mean_data[EVENTS_CATEGORY[index]][event].data.data_by_areas -= subject.get_event_data_table(index, event).fillna(0)
-        mean_data[EVENTS_CATEGORY[index]][event].data.data_by_areas /= mean_data[EVENTS_CATEGORY[index]][event].get_data_by_areas().loc[AREA_VALIDATION]
+        mean_data[EVENTS_CATEGORY[index]][event].data.data_by_areas /= factor
 
     return mean_data
 
