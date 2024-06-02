@@ -49,7 +49,7 @@ class HbOData:
     def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.01,
                    high_freq: float = 0.5,
                    path_length_factor: float = 0.6, scale: float = 0.1, invalid_source_thresh: int = 20,
-                   invalid_detectors_thresh: int = 20):
+                   invalid_detectors_thresh: int = 20, with_optical_density = True):
         """
         Preprocess HbO measurements from a raw fNIRS signals within a SNIRF, across all channels.
         Preprocessing includes:
@@ -90,7 +90,7 @@ class HbOData:
             self.invalid_detec = self.storm.invalid_detec(invalid_detectors_thresh)
 
         # convert intensity to optical density
-        processed_data = mne.preprocessing.nirs.optical_density(self.raw_data)
+        processed_data = mne.preprocessing.nirs.optical_density(self.raw_data) if with_optical_density else self.raw_data
 
         # evaluate the quality of the data using a scalp coupling index (SCI)
         sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
@@ -124,66 +124,6 @@ class HbOData:
 
         return self.user_data_frame
 
-    def preprocess_by_event(self, raw_data_for_event, channels: Optional[int], low_freq: float = 0.01,
-                            high_freq: float = 0.5,
-                            path_length_factor: float = 0.6, scale: float = 0.1):
-        """
-        Preprocess HbO measurements from a raw fNIRS signals within a SNIRF for one event, across all channels.
-        Preprocessing includes:
-            convert intensity to optical density
-            filter low and high frequency bands
-            convert from optical density to concentration difference
-            convert to micro molar by given scale
-
-        Creates a data Frame with column - 'time', ...relevant valid channels
-        Each raw represents the processed measurements of the HbO values at a certain time in each channel.
-        saves data frame in 'self.all_data_frame'
-
-        If a list of channels is provided creates the above frame only with the listed valid channels, saves
-        data frame in 'self.user_data_frame'
-
-        @param channels:  [int], A list of channels indexes to focus
-        @param low_freq: method will filter values beneath low_freq
-        @param high_freq: method will filter values above low_freq
-        @param path_length_factor: The partial pathlength factor for beer lambert law
-        @param scale: scale to convert to micro molar
-        @return: data Frame with column - 'time', ...relevant valid channels
-                Each raw represents the processed measurements of the HbO values at a certain time in each channel.
-                If a list of channels is provided returns only the valid listed channels.
-        """
-
-        # convert intensity to optical density
-        processed_data = mne.preprocessing.nirs.optical_density(raw_data_for_event)
-
-        # evaluate the quality of the data using a scalp coupling index (SCI)
-        sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
-        bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
-        processed_data = processed_data.drop_channels(bad_channels)
-        # apply temporal derivative distribution repair (tddr) to remove motion artifacts
-        processed_data = mne.preprocessing.nirs.tddr(processed_data)
-
-        # filter low and high frequency bands
-        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  # N-EQ
-
-        # convert from optical density to concentration difference
-        concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
-
-        # extract HbO measurements and drops invalid channels
-        channels_to_drop = [concentrated_data.ch_names[i] for i, ch_type in
-                            enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo']
-        concentrated_data = concentrated_data.drop_channels(channels_to_drop)
-        # Add channel names dropped to "bad_channels" attribute
-        bad_channels += channels_to_drop
-
-        data_frame = pd.DataFrame(concentrated_data.get_data().T, columns=concentrated_data.ch_names)
-
-        # convert to micro molar
-        data_frame = scale * data_frame
-        data_frame.insert(0, TIME_COLUMN, concentrated_data.times)
-        all_data_frame = data_frame
-        user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
-
-        return user_data_frame
 
     def is_storm_invalid_channel(self, channel_name: str, with_storm: bool) -> bool:
         """

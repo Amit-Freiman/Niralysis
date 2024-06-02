@@ -13,7 +13,8 @@ class Event:
     def preprocess(self, instructions: PreprocessingInstructions):
         self.data.preprocess(instructions.channels, with_storm=False, low_freq=instructions.low_freq,
                              high_freq=instructions.high_freq,
-                             path_length_factor=instructions.path_length_factor, scale=instructions.scale)
+                             path_length_factor=instructions.path_length_factor, scale=instructions.scale,
+                             with_optical_density=False)
 
     def get_data(self):
         return self.data.get_hbo_data()

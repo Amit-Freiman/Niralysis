@@ -25,6 +25,8 @@ class Subject:
             self.events_table = self.subject.events_handler.get_continuous_events_frame()
             self.events_data = None
             self.preprocess_by_events = preprocess_by_events
+            self.data_by_ares = False
+            print(f"creating subject {self.name} data")
             if not self.preprocess_by_events:
                 self.subject.set_full_hbo_data(None, False, high_pass_freq=0.4)
                 self.set_data_by_areas(areas)
@@ -61,6 +63,7 @@ class Subject:
             event = Event(event_details[EVENT_COLUMN], data_by_area=event_data)
         else:
             raw_data = mne.io.read_raw_snirf(self.path, preload=True)
+            raw_data = mne.preprocessing.nirs.optical_density(raw_data)
             raw_data.crop(event_details[START_COLUMN], event_details[END_COLUMN])
             event = Event(event_details[EVENT_COLUMN], raw_data=raw_data)
             event.preprocess(preprocessing_instructions)
