@@ -5,6 +5,8 @@ import pandas as pd
 from niralysis.Storm.Storm import Storm
 from niralysis.utils.consts import *
 from itertools import compress
+import pywt
+import numpy as np
 
 from niralysis.utils.data_manipulation import set_data_by_areas
 
@@ -97,11 +99,12 @@ class HbOData:
         self.bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
         processed_data = processed_data.drop_channels(self.bad_channels)
 
-        # apply temporal derivative distribution repair (tddr) to remove motion artifacts
-        # processed_data = mne.preprocessing.nirs.tddr(processed_data)
+        # apply motion correction - Wavelet Filtering
+        processed_data.save('before_wavelet_filtering.xlsx', overwrite=True)
+        processed_data = self.wavelet_filter_pywt(processed_data)
 
         # filter low and high frequency bands
-        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  # N-EQ
+        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data
 
         # convert from optical density to concentration difference
         concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
@@ -148,3 +151,28 @@ class HbOData:
             raise Exception("No Data Frame is available, make sure to create data frame by the set_data_by_areas "
                             "function")
         return self.data_by_areas
+
+    def wavelet_filter_pywt(self, data, wavelet='db4', level=1, threshold=None):
+        """
+        Apply wavelet filtering using PyWavelets.
+        
+        Args:
+            data (mne.io.Raw): Raw data to be filtered.
+            wavelet (str): Wavelet type to be used.
+            level (int): Decomposition level.
+            threshold (float): Threshold value for wavelet filtering.
+            
+        Returns:
+            mne.io.Raw: Wavelet filtered data.
+        """
+        data_array = data.get_data()
+        coeffs = pywt.wavedec(data_array, wavelet, level=level)
+        if threshold is None:
+            sigma = np.median(np.abs(coeffs[-level])) / 0.6745
+            threshold = sigma * np.sqrt(2 * np.log(len(data_array)))
+        coeffs[1:] = [pywt.threshold(i, value=threshold, mode='soft') for i in coeffs[1:]]
+        filtered_data = pywt.waverec(coeffs, wavelet)
+        
+        filtered_mne_data = data.copy()
+        filtered_mne_data._data = filtered_data
+        return filtered_mne_data
