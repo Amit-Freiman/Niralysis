@@ -99,13 +99,12 @@ class HbOData:
         self.bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
         processed_data = processed_data.drop_channels(self.bad_channels)
 
-        # apply motion correction - Wavelet Filtering
-        processed_data.save('before_wavelet_filtering.xlsx', overwrite=True)
-        processed_data = self.wavelet_filter_pywt(processed_data)
-
         # filter low and high frequency bands
         filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data
 
+        # apply motion correction - Wavelet Filtering
+        processed_data = self.wavelet_filter_pywt(processed_data)
+        
         # convert from optical density to concentration difference
         concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
 
