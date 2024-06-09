@@ -54,7 +54,7 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
     elif templates[subject] == 'M':
         temp_dict = new_medium
     elif templates[subject] == 'L':
-        temp_dict = None
+        temp_dict = new_large
     else:
         temp_dict = old_area_dict
 
