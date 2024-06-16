@@ -11,7 +11,7 @@ from ...EventsHandler.EventsHandler import EventsHandler
 from ...Niralysis import Niralysis
 from ...utils.add_annotations import set_events_from_psychopy_table
 from ...utils.consts import TIME_COLUMN
-from ...utils.data_manipulation import calculate_mean_table, count_nan_values
+from ...utils.data_manipulation import calculate_mean_table, count_nan_values, get_areas_dict
 
 
 def process_ISC_by_coupels(folder_path):
@@ -47,20 +47,18 @@ def process_ISC_by_coupels(folder_path):
 
 def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
     path = os.path.join(root, name)
-    date = root.split('\\')[-1]
-    templates = templates_handler(date)
-    if templates[subject] == 'S':
-        temp_dict = new_small
-    elif templates[subject] == 'M':
-        temp_dict = new_medium
-    elif templates[subject] == 'L':
-        temp_dict = None
-    else:
-        temp_dict = old_area_dict
+    preprocessing_instructions = Subject.get_subjects_preprocessing_instructions(path)
+    if preprocessing_instructions is None:
+        date = root.split('\\')[-1]
+        templates = templates_handler(date)
+        template = templates[subject] if templates is not None else None
+        temp_dict = get_areas_dict(template)
+        preprocessing_instructions = PreprocessingInstructions(areas_dict=temp_dict)
 
-    if temp_dict is not None:
+    if preprocessing_instructions.areas_dict is not None:
         try:
-            subject = Subject(path, temp_dict, preprocess_by_events=preprocess_by_events, preprocessing_instructions=PreprocessingInstructions())
+            subject = Subject(path, preprocess_by_events=preprocess_by_events,
+                              preprocessing_instructions=preprocessing_instructions)
             subjects_list.append(subject)
         except Exception as e:
             print(f"{name} failed: {e}")
@@ -82,10 +80,10 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
 
         # If  -A or -B files exist in the folder, call the run function
-        if len(snirf_files_A) == 1:
+        if len(snirf_files_A) >= 1:
             subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
-        if len(snirf_files_B) == 1:
+        if len(snirf_files_B) >= 1:
             subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
 
     merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)

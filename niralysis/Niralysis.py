@@ -1,5 +1,6 @@
-import pathlib 
+import pathlib
 
+from niralysis.SharedReality.Subject.PreprocessingInstructions import PreprocessingInstructions
 from niralysis.Storm.Storm import Storm
 from niralysis.OpenPose.OpenPose import OpenPose
 from niralysis.HbOData.HbOData import HbOData
@@ -55,7 +56,7 @@ class Niralysis:
         """ 
 
 
-    def __init__(self, snirf_fname: str):
+    def __init__(self, snirf_fname: str, preprocessing_instructions = PreprocessingInstructions()):
 
         if type(snirf_fname) == pathlib.WindowsPath:
             snirf_fname = str(snirf_fname)
@@ -82,13 +83,18 @@ class Niralysis:
         self.storm_fname = None
         self.hbo_data = HbOData(snirf_fname)
         self.events_handler = EventsHandler(snirf_fname)
-
+        self.preprocessing_instructions = preprocessing_instructions
 
 
     ######## HbO ########
 
-    def set_full_hbo_data(self, channels: [int], with_storm: bool, low_pass_freq=0.01, high_pass_freq=0.5, path_length_factor=0.6):
-        self.hbo_data.preprocess(channels, with_storm, low_pass_freq, high_pass_freq, path_length_factor)
+    def set_full_hbo_data(self):
+        self.hbo_data.preprocess(channels=self.preprocessing_instructions.channels,
+                                 with_storm=self.preprocessing_instructions.with_storm,
+                                 low_freq=self.preprocessing_instructions.low_freq,
+                                 high_freq=self.preprocessing_instructions.high_freq,
+                                 path_length_factor=self.preprocessing_instructions.path_length_factor,
+                                 bad_channels=self.preprocessing_instructions.bad_channels)
 
     ######## STORM ########
         

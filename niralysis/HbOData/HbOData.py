@@ -49,7 +49,7 @@ class HbOData:
     def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.01,
                    high_freq: float = 0.5,
                    path_length_factor: float = 0.6, scale: float = 0.1, invalid_source_thresh: int = 20,
-                   invalid_detectors_thresh: int = 20, with_optical_density = True):
+                   invalid_detectors_thresh: int = 20, with_optical_density = True, bad_channels: [str] = []):
         """
         Preprocess HbO measurements from a raw fNIRS signals within a SNIRF, across all channels.
         Preprocessing includes:
@@ -110,6 +110,7 @@ class HbOData:
         channels_to_drop = [concentrated_data.ch_names[i] for i, ch_type in
                             enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo' or
                             self.is_storm_invalid_channel(concentrated_data.ch_names[i], with_storm)]
+        channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels]
         concentrated_data = concentrated_data.drop_channels(channels_to_drop)
         # Add channel names dropped to "bad_channels" attribute
         self.bad_channels += channels_to_drop
