@@ -20,7 +20,14 @@ class SharedReality:
                    '06022024_1400': ('Alon', 'Roy', 'Alon', 'Sahar'),
                    '07022024_1600': ('Roy', 'Yael', 'Roy', 'Sahar'),
                    '01022024_1000': ('Roy', 'Sahar', 'Roy', 'Yael'),
-                   '31012024_1600': ('Roy', 'Alon', 'Roy', 'Yael')
+                   '31012024_1600': ('Roy', 'Alon', 'Roy', 'Yael'),
+                   '01042024_1210': ('Roy', 'Alon', 'Roy', 'Sahar'),
+                   '04032024_1200': ('Roy', 'Alon', 'Roy', 'Sahar'),
+                   '06032024_1600': ('Roy', 'Roy', 'Yael', 'Sahar'),
+                   '07032024_1000': ('Roy', 'Alon', 'Roy', 'Yael'),
+                   '08022024_1400': ('Alon', 'Alon', 'Roy', 'Yael'),
+                   '11032024_1145': ('Roy', 'Roy', 'Alon', 'Yael'),
+                   '12032024_1410': ('Roy', 'Yael', 'Roy', 'Sahar'),
                    }
         return choices[date]
     
