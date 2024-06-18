@@ -1,6 +1,6 @@
 import pandas as pd
 
-from niralysis.SharedReality.consts import AREA_VALIDATION, VALID_CHANNELS
+from niralysis.SharedReality.consts import *
 from niralysis.utils.consts import TIME_COLUMN
 
 
@@ -83,3 +83,13 @@ def count_nan_values(df):
     nan_counts = df.isnull().sum()  # Count NaN values in each column
     nan_counts_dict = nan_counts.to_dict()  # Convert Series to dictionary
     return nan_counts_dict
+
+
+def get_areas_dict(template: str):
+    if template == 'S':
+        return new_small
+    if template == 'M':
+        return new_medium
+    if template == 'L':
+        return new_large
+    return old_area_dict

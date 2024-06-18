@@ -113,10 +113,12 @@ def templates_handler(date):
             '12032024_1410': ('M', 'L')
                 }
 
-    return choices[date]
+    return choices.get(date)
 
 SUBJECT_A = "A"
 SUBJECT_B = "B"
+SUBJECT_A_ID = 0
+SUBJECT_B_ID = 1
 
 A_PRE_CHOICE_1 = "A pre-choice first watch"
 A_PRE_CHOICE_2 = "A pre-choice second watch"
@@ -156,6 +158,21 @@ EVENTS_CATEGORY = {
     10: SECOND_WATCH
 }
 
+## subject's xlsx
+
+CAP_SIZE = "Cap Size"
+BAD_CHANNELS = "Bad Channels"
+DATE = "Date of Experiment"
+HOUR = "Hour of Experiment"
+SUBJECT = "Subject (A/B)"
+LOW_FREQ = "Low frequency"
+HIGH_FREQ = "High frequency"
 
 
-
+## diffault Values
+DEFAULT_LOW_FREQ = 0.01
+DEFAULT_HIGH_FREQ = 0.5
+DEFAULT_PATH_LENGTH_FACTOR = 0.6
+DEFAULT_SCALE = 0.1
+DEFAULT_INVALID_SOURCE_THRESH = 20
+DEFAULT_INVALID_DETECTORS_THRESH = 20

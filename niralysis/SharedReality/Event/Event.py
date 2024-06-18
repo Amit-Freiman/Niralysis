@@ -11,9 +11,10 @@ class Event:
         self.data = HbOData('', raw_data, data_frame, data_by_area)
 
     def preprocess(self, instructions: PreprocessingInstructions):
-        self.data.preprocess(instructions.channels, with_storm=False, low_freq=instructions.low_freq,
+        self.data.preprocess(instructions.channels, with_storm=instructions.with_storm, low_freq=instructions.low_freq,
                              high_freq=instructions.high_freq,
                              path_length_factor=instructions.path_length_factor, scale=instructions.scale,
+                             bad_channels=instructions.bad_channels,
                              with_optical_density=False)
 
     def get_data(self):
