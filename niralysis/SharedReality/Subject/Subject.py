@@ -28,7 +28,7 @@ class Subject:
             self.data_by_ares = False
             print(f"creating subject {self.name} data")
             if not self.preprocess_by_events:
-                self.subject.set_full_hbo_data(None, False, high_pass_freq=0.4)
+                self.subject.set_full_hbo_data(None, False, high_pass_freq=0.5)
                 self.set_data_by_areas(areas)
                 self.set_events_data()
             else:
