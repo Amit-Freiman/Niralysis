@@ -5,6 +5,8 @@ import pandas as pd
 from niralysis.Storm.Storm import Storm
 from niralysis.utils.consts import *
 from itertools import compress
+import pywt
+import numpy as np
 
 from niralysis.utils.data_manipulation import set_data_by_areas
 
@@ -35,6 +37,8 @@ class HbOData:
         self.storm = Storm(path)
         self.invalid_sourc = None
         self.invalid_detec = None
+        self.bad_channels_sci = None
+        self.bad_channels_cv = None
         self.bad_channels = None
         self.data_by_areas = data_by_area
 
@@ -94,15 +98,52 @@ class HbOData:
 
         # evaluate the quality of the data using a scalp coupling index (SCI)
         sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
-        self.bad_channels = list(compress(processed_data.ch_names, sci < 0.5))
-        processed_data = processed_data.drop_channels(self.bad_channels)
+        self.bad_channels_sci = list(compress(processed_data.ch_names, sci < 0.7))
+        # processed_data = processed_data.drop_channels(self.bad_channels_sci)
 
-        # apply temporal derivative distribution repair (tddr) to remove motion artifacts
-        # processed_data = mne.preprocessing.nirs.tddr(processed_data)
+        # evaluate the quality of the data using a coefficient of variation (CV)
+        # CV is given in percentage by CV (%) = 100 × standard deviation (data)/mean (data). “Data” in this case is the raw optical transmission data, because otherwise the mean is close to zero. Channels above a certain threshold (CV > 7.5%, as used in [48]) indicate unphysiological noise and are excluded from further processing.
+        cv = 100 * (np.std(processed_data.get_data(), axis=1) / np.mean(processed_data.get_data(), axis=1))
+        self.bad_channels_cv = list(compress(processed_data.ch_names, cv > 7.5))
+        # Go over the channels, if a "short length" channel is dropped, make sure the "long length" channel is also dropped
+        # Check the channel lengths and save it as sl or ll (Channels are built like this: 'S1_D1 757' or 'S1_D1 845' or 'S1_D1 844', etc.)
+        # all_lengths = []
+        # for channel in self.bad_channels_cv:
+        #     length = channel[-3:]
+        #     all_lengths.append(length)
+        # list_of_lengths = list(set(all_lengths))
+        # if int(list_of_lengths[0]) > int(list_of_lengths[1]):
+        #     short_length = list_of_lengths[1]
+        #     long_length = list_of_lengths[0]
+        # else:
+        #     short_length = list_of_lengths[0]
+        #     long_length = list_of_lengths[1]
+
+        # for channel in self.bad_channels_cv:
+        #     if channel[-3:] == short_length:
+        #         new_channel = channel[:-3] + long_length
+        #         if new_channel not in self.bad_channels_cv:
+        #             self.bad_channels_cv.append(new_channel)
+        #     elif channel[-3:] == long_length:
+        #         new_channel = channel[:-3] + short_length
+        #         if new_channel not in self.bad_channels_cv:
+        #             self.bad_channels_cv.append(new_channel)
+            
+        # # Make sure there are no duplicates
+        # self.bad_channels_cv = list(set(self.bad_channels_cv))
+        # # Display the channels that were dropped
+        # print(f"Channels dropped due to high CV: {self.bad_channels_cv}")
+        # print(f"Channels dropped due to high SCI: {self.bad_channels_sci}")   
+        processed_data = processed_data.drop_channels(self.bad_channels_sci)
+        
+
+
+        # apply motion correction - Wavelet Filtering
+        processed_data = self.wavelet_filter_pywt(processed_data)
 
         # filter low and high frequency bands
-        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  # N-EQ
-
+        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data
+        
         # convert from optical density to concentration difference
         concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
 
@@ -110,7 +151,9 @@ class HbOData:
         channels_to_drop = [concentrated_data.ch_names[i] for i, ch_type in
                             enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo' or
                             self.is_storm_invalid_channel(concentrated_data.ch_names[i], with_storm)]
-        channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels]
+        
+        channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels]       
+
         concentrated_data = concentrated_data.drop_channels(channels_to_drop)
         # Add channel names dropped to "bad_channels" attribute
         self.bad_channels += channels_to_drop
@@ -149,3 +192,28 @@ class HbOData:
             raise Exception("No Data Frame is available, make sure to create data frame by the set_data_by_areas "
                             "function")
         return self.data_by_areas
+
+    def wavelet_filter_pywt(self, data, wavelet='db4', level=1, threshold=None):
+        """
+        Apply wavelet filtering using PyWavelets.
+        
+        Args:
+            data (mne.io.Raw): Raw data to be filtered.
+            wavelet (str): Wavelet type to be used.
+            level (int): Decomposition level.
+            threshold (float): Threshold value for wavelet filtering.
+            
+        Returns:
+            mne.io.Raw: Wavelet filtered data.
+        """
+        data_array = data.get_data()
+        coeffs = pywt.wavedec(data_array, wavelet, level=level)
+        if threshold is None:
+            sigma = np.median(np.abs(coeffs[-level])) / 0.6745
+            threshold = sigma * np.sqrt(2 * np.log(len(data_array)))
+        coeffs[1:] = [pywt.threshold(i, value=threshold, mode='soft') for i in coeffs[1:]]
+        filtered_data = pywt.waverec(coeffs, wavelet)
+        
+        filtered_mne_data = data.copy()
+        filtered_mne_data._data = filtered_data
+        return filtered_mne_data

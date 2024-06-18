@@ -31,10 +31,15 @@ new_medium = {
     "right dmPFC": ["S6_D5", "S6_D6", "S7_D6"],    
     "right vmPFC": ["S5_D5"],
 
-    "Primary Auditory Cortex": ["S14_D11"],
-    "Secondary Auditory Cortex": ["S12_D10", "S14_D10", "S14_D13"],
+    # "Primary Auditory Cortex": ["S14_D11"],
+    # "Secondary Auditory Cortex": ["S12_D10", "S14_D10", "S14_D13"],
+    # "Broca": ["S12_D9", "S12_D10"],
+    # "Wernicke": ["S15_D13", "S16_D13"],
+    # "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
+    # "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"] 
+
+    "Primary Auditory Cortex": ["S14_D11", "S14_D10", "S14_D13"],
     "Broca": ["S12_D9", "S12_D10"],
-    "Wernicke": ["S15_D13", "S16_D13"],
     "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
     "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"] 
 }
@@ -52,14 +57,19 @@ new_small = {
     "right dmPFC": ["S6_D5", "S6_D6", "S7_D6"],    
     "right vmPFC": ["S5_D5"],
 
-    "Primary Auditory Cortex": ["S14_D13", "S16_D13"],
-    "Secondary Auditory Cortex": ["S14_D10"],
+    # "Primary Auditory Cortex": ["S14_D13", "S16_D13"],
+    # "Secondary Auditory Cortex": ["S14_D10"],
+    # "Broca": ["S12_D9"],
+    # "Wernicke": ["S16_D13", "S15_D13"],
+    # "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
+    # "Somatosensory Cortex (M1/S1)": ["S12_D11", "S14_D11", "S13_D12", "S13_D11"] 
+
+    "Primary Auditory Cortex": ["S14_D13", "S16_D13","S14_D10"],
     "Broca": ["S12_D9"],
-    "Wernicke": ["S16_D13", "S15_D13"],
     "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
     "Somatosensory Cortex (M1/S1)": ["S12_D11", "S14_D11", "S13_D12", "S13_D11"] 
-}
 
+}
 new_large = {
     "left TPJ": ["S16_D11","S16_D13", "S15_D13"],
     "right TPJ": ["S1_D1", "S2_D1"],
@@ -73,10 +83,15 @@ new_large = {
     "right dmPFC": ["S6_D5", "S6_D6", "S7_D6", "S5_D5"],    
     "right vmPFC": [],
 
-    "Primary Auditory Cortex": ["S14_D11"],
-    "Secondary Auditory Cortex": ["S14_D10", "S14_D13"],
+    # "Primary Auditory Cortex": ["S14_D11"],
+    # "Secondary Auditory Cortex": ["S14_D10", "S14_D13"],
+    # "Broca": ["S12_D9", "S12_D10"],
+    # "Wernicke": ["S15_D13", "S16_D13"],
+    # "Occipital Cortex (V1)": ["S17_D15", "S18_D15", "S19_D15", "S20_D15"],
+    # "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"] 
+
+    "Primary Auditory Cortex": ["S14_D11", "S14_D10", "S14_D13"],
     "Broca": ["S12_D9", "S12_D10"],
-    "Wernicke": ["S15_D13", "S16_D13"],
     "Occipital Cortex (V1)": ["S17_D15", "S18_D15", "S19_D15", "S20_D15"],
     "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"] 
 }
@@ -88,7 +103,14 @@ def templates_handler(date):
             '06022024_1400': ('S','S'),
             '07022024_1600': ('M','S'),
             '01022024_1000': ('L', 'M'),
-            '31012024_1600': ('S', 'M')
+            '31012024_1600': ('S', 'M'),
+            '01042024_1210': ('M', 'M'),
+            '04032024_1200': ('M', 'L'),
+            '06032024_1600': ('S', 'M'),
+            '07032024_1000': ('M', 'M'),
+            '08022024_1400': ('S', 'S'),
+            '11032024_1145': ('M', 'M'),
+            '12032024_1410': ('M', 'L')
                 }
 
     return choices.get(date)

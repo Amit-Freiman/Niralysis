@@ -1,6 +1,7 @@
 import copy
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 from niralysis.SharedReality.SharedReality import SharedReality
 from niralysis.SharedReality.Subject.Subject import Subject
 from niralysis.ISC.ISC import ISC
@@ -56,6 +57,18 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
         preprocessing_instructions = PreprocessingInstructions(areas_dict=temp_dict)
 
     if preprocessing_instructions.areas_dict is not None:
+      date = root.split('\\')[-1]
+      templates = templates_handler(date)
+      if templates[subject] == 'S':
+          temp_dict = new_small
+      elif templates[subject] == 'M':
+          temp_dict = new_medium
+      elif templates[subject] == 'L':
+          temp_dict = new_large
+      else:
+          temp_dict = old_area_dict
+
+    if temp_dict is not None:
         try:
             subject = Subject(path, preprocess_by_events=preprocess_by_events,
                               preprocessing_instructions=preprocessing_instructions)
@@ -94,11 +107,58 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         new_subject = Subject("")
         new_subject.events_data = sum_subjects_exclude_i
         ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event))
+
     main = calculate_mean_table(ISC_tables, factor)
-    main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
+    # main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
 
-    return main
+    return main, ISC_tables
 
+def visualize_ISC_tables(ISC_tables):
+    # Extract brain areas from the columns (excluding the first column)
+    brain_areas = ['Primary Auditory Cortex']
+
+    # Initialize two plots for first view and second view
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8))
+
+    # Define a color map for different ISC tables
+    color_map = {0: 'red', 1: 'blue', 2: 'green', 3: 'yellow', 4: 'purple', 5: 'orange', 6: 'cyan',
+                  7: 'magenta', 8: 'lime', 9: 'pink', 10: 'teal', 11: 'lavender', 12: 'brown', 13: 'gold',
+                    14: 'navy', 15: 'olive', 16: 'maroon', 17: 'aqua', 18: 'coral', 19: 'indigo',
+                      20: 'silver', 21: 'orchid', 22: 'salmon', 23: 'turquoise', 24: 'tan'} 
+
+    # Iterate over the ISC tables and plot each one
+    for i, isc_table in enumerate(ISC_tables):
+        # Extract the events/subjects (assuming the first column contains these)
+        isc_table.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
+        
+        for brain_area in brain_areas:
+            # Extract ISC values for the current brain area
+            isc_values = isc_table[brain_area]
+            
+            ax1.scatter(isc_values.index[:4], isc_values[:4], label=f'{brain_area} (Subject_{i})', color=color_map[i], alpha=0.7, marker='o', linewidths=0)
+            ax2.scatter(isc_values.index[4:], isc_values[4:], label=f'{brain_area} (Subject_{i})', color=color_map[i], alpha=0.7, marker='o', linewidths=0)
+
+    # Set plot labels and title for first view
+    ax1.set_xlabel('Events')
+    ax1.set_ylabel('ISC Values')
+    ax1.set_title('First View')
+
+    # Set plot labels and title for second view
+    ax2.set_xlabel('Events')
+    ax2.set_ylabel('ISC Values')
+    ax2.set_title('Second View')
+
+    # Create a legend to show which color represents which ISC table
+    legend_labels = [f'Subject_{i}' for i in range(len(ISC_tables))]
+    legend_handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color_map[i], markersize=10) for i in range(len(ISC_tables))]
+    ax1.legend(legend_handles, legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
+    ax2.legend(legend_handles, legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
+
+    # Adjust the spacing between subplots
+    plt.tight_layout()
+
+    # Show the plots
+    plt.show()
 
 def process_diff_between_snirf_and_psychopy(folder_path: str) -> pd.DataFrame:
     """
