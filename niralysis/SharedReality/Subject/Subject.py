@@ -31,8 +31,6 @@ class Subject:
             if not self.preprocess_by_events:
                 self.subject.set_full_hbo_data()
                 self.set_data_by_areas()
-                self.subject.set_full_hbo_data(None, False, high_pass_freq=0.5)
-                self.set_data_by_areas(areas)
                 self.set_events_data()
             else:
                 self.subject.hbo_data.raw_data = 0
@@ -52,7 +50,7 @@ class Subject:
         events_data = {FIRST_WATCH: {}, DISCUSSIONS: {}, SECOND_WATCH: {}}
         for index, event in self.events_table.iterrows():
             event_instance = self.get_event_data(event, self.preprocessing_instructions)
-            if self.preprocessing_instructions.areas_dict is not None:
+            if self.preprocess_by_events:
                 event_instance.set_by_areas(self.preprocessing_instructions.areas_dict)
             events_data[EVENTS_CATEGORY[index]][event[EVENT_COLUMN]] = event_instance
 
