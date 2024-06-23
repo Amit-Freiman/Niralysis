@@ -80,7 +80,9 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
 
 def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
     """s
-    Processes the ISC between A and B and subjects of all the run folders within the given path.
+    Processes the ISC between all subjects of all the run folders within the given path.
+    For each subject calculates the isc between the subject and the means of al the rest subjects
+    Presents the means of all isc calculations
     @param folder_path:
     @return:
     """
@@ -115,6 +117,52 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
     # main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
 
     return main, ISC_tables
+
+
+def process_ISC_between_all_subjects_opposed_events(folder_path, preprocess_by_event: bool):
+    """
+    Processes the ISC between all subjects of all the run folders within the given path.
+    For each subject calculates the isc between the subject event all the other events of the means of al the rest subjects
+    Presents the means of all isc calculations
+    @param folder_path:
+    @return:
+    """
+    subjects = []
+
+    # Iterate through all folders and sub folders
+    for root, dirs, files in os.walk(folder_path):
+        # Check if there are two snirf files, one ending with -A and the other ending with -B
+        snirf_files = [file for file in files if file.endswith(".snirf")]
+        snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
+        snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+
+        # If  -A or -B files exist in the folder, call the run function
+        if len(snirf_files_A) >= 1:
+            subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
+
+        if len(snirf_files_B) >= 1:
+            subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
+
+    merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)
+
+    ISC_tables = []
+    tables_title = []
+    for i, subject in enumerate(subjects):
+        sum_subjects_exclude_i = mean_event_data_table(subject, merged_data, factor if not preprocess_by_event else None)
+        new_subject = Subject("")
+        new_subject.events_data = sum_subjects_exclude_i
+        first_watch = ISC.subjects_ISC_by_oposed_events(subject.events_data[FIRST_WATCH],
+                                                        new_subject.events_data[FIRST_WATCH])
+        second_watch = ISC.subjects_ISC_by_oposed_events(subject.events_data[SECOND_WATCH],
+                                                         new_subject.events_data[SECOND_WATCH])
+        ISC_tables.append(first_watch)
+        tables_title.append(f"{subject.name} {FIRST_WATCH}")
+        ISC_tables.append(second_watch)
+        tables_title.append(f"{subject.name} {SECOND_WATCH}")
+
+
+    main_table = pd.concat(ISC_tables, keys=tables_title)
+    return main_table
 
 def visualize_ISC_tables(ISC_tables):
     # Extract brain areas from the columns (excluding the first column)
