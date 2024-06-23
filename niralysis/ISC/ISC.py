@@ -1,7 +1,10 @@
-import numpy
+from typing import List, Dict
+
+import numpy as np
 import pandas as pd
 from numpy import mean, corrcoef, zeros
 
+from niralysis.SharedReality.Event.Event import Event
 from niralysis.SharedReality.Subject.Subject import Subject
 from niralysis.SharedReality.consts import EVENTS_TABLE_NAMES
 from niralysis.utils.consts import *
@@ -25,7 +28,7 @@ class ISC:
         return pd.DataFrame(binned_signal)
 
     @staticmethod
-    def ISC(df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float, by_areas: dict = None) -> numpy.array:
+    def ISC(df_A: pd.DataFrame, df_B: pd.DataFrame, sampling_rate: float, by_areas: dict = None) -> np.array:
         """
         Calculates the ISC - Inter subject correlation between two subjects fNIRS measures of a certain event.
 
@@ -182,5 +185,44 @@ class ISC:
             if not output_path.endswith('.csv'):
                 raise ValueError('Output path must end with .csv')
             ISC_table.to_csv(output_path)
+
+        return ISC_table
+
+    @staticmethod
+    def subjects_ISC_by_oposed_events(subject_A_events: Dict[str, Event], subject_B_events: Dict[str, Event], sampling_rate: float = 0.02,):
+        """
+            Function to compute correlation between fNIRS measures of two Subject Class instances'.
+            Let's Say We have events I, II and III. We will compute the folowing isc scores:
+            - subject A, event I and subject B, event II and
+            - subject A, event I and subject B, event III and
+            - subject A, event II and subject B, event I and
+            - subject A, event II and subject B, event III and
+            - subject A, event III and subject B, event I and
+            - subject A, event III and subject B, event II and
+
+            Parameters:
+                subject_A_events_list (List[Event]):
+
+                subject_B_events_list (List[Event]):
+
+                sampling_rate: sampling rate in seconds. Used to divide the time series to 5 seconds bins.
+                output_path: a pth to csv file, if given the function will save the returned data frame in to the
+                given path.
+
+            Returns:
+                pd.DataFrame: table of ISC values, each row is an ISC values of each channel at a certain event.
+
+        """
+        columns = (["A's event", "B's event"] +
+                   list(list(subject_A_events.values())[0].get_default_data().drop([TIME_COLUMN], axis=1).columns))
+
+        ISC_table = pd.DataFrame(columns=columns)
+
+        for A_event_name, A_event in subject_A_events.items():
+            for B_event_name, B_event in subject_A_events.items():
+                if A_event_name == B_event_name:
+                    continue
+                isc_score = ISC.ISC(A_event.get_default_data(), B_event.get_default_data(), sampling_rate)
+                ISC_table.loc[len(ISC_table)] = np.concatenate(([A_event_name, B_event_name], isc_score))
 
         return ISC_table

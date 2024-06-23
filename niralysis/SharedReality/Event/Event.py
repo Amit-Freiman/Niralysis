@@ -25,3 +25,8 @@ class Event:
 
     def get_data_by_areas(self):
         return self.data.get_hbo_data_by_areas()
+
+    def get_default_data(self):
+        if self.get_data_by_areas() is not None:
+            return self.get_data_by_areas()
+        return self.get_data()
