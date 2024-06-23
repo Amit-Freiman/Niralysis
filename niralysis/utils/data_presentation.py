@@ -13,10 +13,17 @@ def get_low_auditory_isc_plot(isc_table: pd.DataFrame, subject: Subject, mean: S
         if event["Primary Auditory Cortex"] < 0.1:
             subject_event_data_table = subject.get_event_data_table(index, event_name)
             mean_event_data_table = mean.get_event_data_table(index, event_name)
-            time = subject_event_data_table["Time"] - subject_event_data_table["Time"][0]
-            watch = "first" if index < 4 else "second"
             y_subject = subject_event_data_table["Primary Auditory Cortex"]
             y_mean = mean_event_data_table["Primary Auditory Cortex"]
+
+            if len(y_subject) <= len(y_mean):
+                time = subject_event_data_table["Time"] - subject_event_data_table["Time"][0]
+                y_mean = y_mean[:len(time)]
+            else:
+                time = mean_event_data_table["Time"] - mean_event_data_table["Time"][0]
+                y_subject = y_subject[:len(time)]
+
+            watch = "first" if index < 4 else "second"
             plt.figure(figsize=(15, 10))
             plt.plot(time, y_subject, linewidth=1.5, color='green', label="Subject")
             plt.plot(time, y_mean, linewidth=1.5, color='red', label="Mean", alpha=1)
