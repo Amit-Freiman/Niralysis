@@ -39,7 +39,7 @@ class HbOData:
         self.invalid_detec = None
         self.bad_channels_sci = None
         self.bad_channels_cv = None
-        self.bad_channels = None
+        self.bad_channels = []
         self.data_by_areas = data_by_area
 
     def set_storm_path(self, storm_path: str):
@@ -85,88 +85,93 @@ class HbOData:
         """
 
         # if storm - drop channels from invalid_sourc and invalid_detector
-        if with_storm:
-            if self.storm_path is None:
-                raise Exception('Could not find a storm\'s path.\n Please set a storm file path by method '
-                                '- "set_storm_path(storm_path)"')
-            self.storm.set_storm_file(self.storm_path)
-            self.invalid_sourc = self.storm.invalid_sourc(invalid_source_thresh)
-            self.invalid_detec = self.storm.invalid_detec(invalid_detectors_thresh)
+        try:
+            if with_storm:
+                if self.storm_path is None:
+                    raise Exception('Could not find a storm\'s path.\n Please set a storm file path by method '
+                                    '- "set_storm_path(storm_path)"')
+                self.storm.set_storm_file(self.storm_path)
+                self.invalid_sourc = self.storm.invalid_sourc(invalid_source_thresh)
+                self.invalid_detec = self.storm.invalid_detec(invalid_detectors_thresh)
 
-        # convert intensity to optical density
-        processed_data = mne.preprocessing.nirs.optical_density(self.raw_data) if with_optical_density else self.raw_data
+            # convert intensity to optical density
+            processed_data = mne.preprocessing.nirs.optical_density(self.raw_data) if with_optical_density else self.raw_data
 
-        # evaluate the quality of the data using a scalp coupling index (SCI)
-        sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
-        self.bad_channels_sci = list(compress(processed_data.ch_names, sci < 0.7))
-        # processed_data = processed_data.drop_channels(self.bad_channels_sci)
+            # evaluate the quality of the data using a scalp coupling index (SCI)
+            sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
+            self.bad_channels_sci = list(compress(processed_data.ch_names, sci < 0.7))
+            # processed_data = processed_data.drop_channels(self.bad_channels_sci)
 
-        # evaluate the quality of the data using a coefficient of variation (CV)
-        # CV is given in percentage by CV (%) = 100 × standard deviation (data)/mean (data). “Data” in this case is the raw optical transmission data, because otherwise the mean is close to zero. Channels above a certain threshold (CV > 7.5%, as used in [48]) indicate unphysiological noise and are excluded from further processing.
-        cv = 100 * (np.std(processed_data.get_data(), axis=1) / np.mean(processed_data.get_data(), axis=1))
-        self.bad_channels_cv = list(compress(processed_data.ch_names, cv > 7.5))
-        # Go over the channels, if a "short length" channel is dropped, make sure the "long length" channel is also dropped
-        # Check the channel lengths and save it as sl or ll (Channels are built like this: 'S1_D1 757' or 'S1_D1 845' or 'S1_D1 844', etc.)
-        # all_lengths = []
-        # for channel in self.bad_channels_cv:
-        #     length = channel[-3:]
-        #     all_lengths.append(length)
-        # list_of_lengths = list(set(all_lengths))
-        # if int(list_of_lengths[0]) > int(list_of_lengths[1]):
-        #     short_length = list_of_lengths[1]
-        #     long_length = list_of_lengths[0]
-        # else:
-        #     short_length = list_of_lengths[0]
-        #     long_length = list_of_lengths[1]
+            # evaluate the quality of the data using a coefficient of variation (CV)
+            # CV is given in percentage by CV (%) = 100 × standard deviation (data)/mean (data). “Data” in this case is the raw optical transmission data, because otherwise the mean is close to zero. Channels above a certain threshold (CV > 7.5%, as used in [48]) indicate unphysiological noise and are excluded from further processing.
+            cv = 100 * (np.std(processed_data.get_data(), axis=1) / np.mean(processed_data.get_data(), axis=1))
+            self.bad_channels_cv = list(compress(processed_data.ch_names, cv > 7.5))
+            # Go over the channels, if a "short length" channel is dropped, make sure the "long length" channel is also dropped
+            # Check the channel lengths and save it as sl or ll (Channels are built like this: 'S1_D1 757' or 'S1_D1 845' or 'S1_D1 844', etc.)
+            # all_lengths = []
+            # for channel in self.bad_channels_cv:
+            #     length = channel[-3:]
+            #     all_lengths.append(length)
+            # list_of_lengths = list(set(all_lengths))
+            # if int(list_of_lengths[0]) > int(list_of_lengths[1]):
+            #     short_length = list_of_lengths[1]
+            #     long_length = list_of_lengths[0]
+            # else:
+            #     short_length = list_of_lengths[0]
+            #     long_length = list_of_lengths[1]
 
-        # for channel in self.bad_channels_cv:
-        #     if channel[-3:] == short_length:
-        #         new_channel = channel[:-3] + long_length
-        #         if new_channel not in self.bad_channels_cv:
-        #             self.bad_channels_cv.append(new_channel)
-        #     elif channel[-3:] == long_length:
-        #         new_channel = channel[:-3] + short_length
-        #         if new_channel not in self.bad_channels_cv:
-        #             self.bad_channels_cv.append(new_channel)
-            
-        # # Make sure there are no duplicates
-        # self.bad_channels_cv = list(set(self.bad_channels_cv))
-        # # Display the channels that were dropped
-        # print(f"Channels dropped due to high CV: {self.bad_channels_cv}")
-        # print(f"Channels dropped due to high SCI: {self.bad_channels_sci}")   
-        processed_data = processed_data.drop_channels(self.bad_channels_sci)
-        
+            # for channel in self.bad_channels_cv:
+            #     if channel[-3:] == short_length:
+            #         new_channel = channel[:-3] + long_length
+            #         if new_channel not in self.bad_channels_cv:
+            #             self.bad_channels_cv.append(new_channel)
+            #     elif channel[-3:] == long_length:
+            #         new_channel = channel[:-3] + short_length
+            #         if new_channel not in self.bad_channels_cv:
+            #             self.bad_channels_cv.append(new_channel)
+
+            # # Make sure there are no duplicates
+            # self.bad_channels_cv = list(set(self.bad_channels_cv))
+            # # Display the channels that were dropped
+            # print(f"Channels dropped due to high CV: {self.bad_channels_cv}")
+            # print(f"Channels dropped due to high SCI: {self.bad_channels_sci}")
+            processed_data = processed_data.drop_channels(self.bad_channels_sci)
 
 
-        # apply motion correction - Wavelet Filtering
-        processed_data = self.wavelet_filter_pywt(processed_data)
 
-        # filter low and high frequency bands
-        filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data
-        
-        # convert from optical density to concentration difference
-        concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
+            # apply motion correction - Wavelet Filtering
+            processed_data = self.wavelet_filter_pywt(processed_data)
 
-        # extract HbO measurements and drops invalid channels
-        channels_to_drop = [concentrated_data.ch_names[i] for i, ch_type in
-                            enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo' or
-                            self.is_storm_invalid_channel(concentrated_data.ch_names[i], with_storm)]
-        
-        channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels]       
+            # filter low and high frequency bands
+            filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data
 
-        concentrated_data = concentrated_data.drop_channels(channels_to_drop)
-        # Add channel names dropped to "bad_channels" attribute
-        self.bad_channels += channels_to_drop
+            # convert from optical density to concentration difference
+            concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
 
-        data_frame = pd.DataFrame(concentrated_data.get_data().T, columns=concentrated_data.ch_names)
+            # extract HbO measurements and drops invalid channels
+            channels_to_drop = [concentrated_data.ch_names[i] for i, ch_type in
+                                enumerate(concentrated_data.get_channel_types()) if ch_type != 'hbo' or
+                                self.is_storm_invalid_channel(concentrated_data.ch_names[i], with_storm)]
 
-        # convert to micro molar
-        data_frame = scale * data_frame
-        data_frame.insert(0, TIME_COLUMN, concentrated_data.times)
-        self.all_data_frame = data_frame
-        self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
+            channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels if
+                                                   f"{bad_channel} hbo" in concentrated_data.ch_names]
+            concentrated_data = concentrated_data.drop_channels(channels_to_drop)
+            # Add channel names dropped to "bad_channels" attribute
+            self.bad_channels += channels_to_drop
 
-        return self.user_data_frame
+            data_frame = pd.DataFrame(concentrated_data.get_data().T, columns=concentrated_data.ch_names)
+
+            # convert to micro molar
+            data_frame = scale * data_frame
+            data_frame.insert(0, TIME_COLUMN, concentrated_data.times)
+            self.all_data_frame = data_frame
+            self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
+
+            return self.user_data_frame
+        except Exception as e:
+            print(e)
+
+
 
 
     def is_storm_invalid_channel(self, channel_name: str, with_storm: bool) -> bool:

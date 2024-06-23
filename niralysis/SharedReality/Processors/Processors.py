@@ -13,6 +13,7 @@ from ...Niralysis import Niralysis
 from ...utils.add_annotations import set_events_from_psychopy_table
 from ...utils.consts import TIME_COLUMN
 from ...utils.data_manipulation import calculate_mean_table, count_nan_values, get_areas_dict
+from ...utils.data_presentation import get_low_auditory_isc_plot
 
 
 def process_ISC_by_coupels(folder_path):
@@ -56,7 +57,7 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
         temp_dict = get_areas_dict(template)
         preprocessing_instructions = PreprocessingInstructions(areas_dict=temp_dict)
 
-    if preprocessing_instructions.areas_dict is not None:
+    if preprocessing_instructions.areas_dict is None:
       date = root.split('\\')[-1]
       templates = templates_handler(date)
       if templates[subject] == 'S':
@@ -67,8 +68,8 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
           temp_dict = new_large
       else:
           temp_dict = old_area_dict
-
-    if temp_dict is not None:
+      preprocessing_instructions.areas_dict=temp_dict
+    if preprocessing_instructions.areas_dict is not None:
         try:
             subject = Subject(path, preprocess_by_events=preprocess_by_events,
                               preprocessing_instructions=preprocessing_instructions)
@@ -106,7 +107,9 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         sum_subjects_exclude_i = mean_event_data_table(subject, merged_data, factor if not preprocess_by_event else None)
         new_subject = Subject("")
         new_subject.events_data = sum_subjects_exclude_i
-        ISC_tables.append(ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event))
+        isc_score = ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event)
+        get_low_auditory_isc_plot(isc_score, subject)
+        ISC_tables.append(isc_score)
 
     main = calculate_mean_table(ISC_tables, factor)
     # main.drop(['discussion:A', 'discussion:B', 'open discussion'], axis=0, inplace=True)
