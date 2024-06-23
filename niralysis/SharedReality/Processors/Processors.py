@@ -95,7 +95,7 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
 
-        # If  -A or -B files exist in the folder, call the run function
+        # If -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) >= 1:
             subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
@@ -110,7 +110,7 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         new_subject = Subject("")
         new_subject.events_data = sum_subjects_exclude_i
         isc_score = ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event)
-        get_low_auditory_isc_plot(isc_score, subject)
+        get_low_auditory_isc_plot(isc_score, subject, new_subject)
         ISC_tables.append(isc_score)
 
     main = calculate_mean_table(ISC_tables, factor)
