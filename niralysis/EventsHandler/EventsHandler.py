@@ -2,7 +2,7 @@ import re
 import mne
 import pandas as pd
 from niralysis.utils.consts import *
-from niralysis.utils.add_annotations import set_events_from_rec_delay
+from niralysis.utils.add_annotations import set_events_from_rec_delay, set_events_from_original_file
 
 
 class EventsHandler:
@@ -52,6 +52,8 @@ class EventsHandler:
         if self.raw_data.annotations is None:
             self.spotted_events = None
         
+        if self.path.endswith("A.snirf") or self.path.endswith("A.snirf.gz"):
+            self.raw_data = set_events_from_original_file(self.path)
         # If snirf is B file, we need to take the A file and set the events
         if self.path.endswith("B.snirf") or self.path.endswith("B.snirf.gz"):
         # if self.raw_data.annotations.description.size == 0:

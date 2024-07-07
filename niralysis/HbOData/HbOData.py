@@ -96,18 +96,16 @@ class HbOData:
 
             # convert intensity to optical density
             processed_data = mne.preprocessing.nirs.optical_density(self.raw_data) if with_optical_density else self.raw_data
-
+            processed_data = self.raw_data
             # evaluate the quality of the data using a scalp coupling index (SCI)
             sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
             self.bad_channels_sci = list(compress(processed_data.ch_names, sci < 0.7))
             # processed_data = processed_data.drop_channels(self.bad_channels_sci)
 
             # evaluate the quality of the data using a coefficient of variation (CV)
-            # CV is given in percentage by CV (%) = 100 × standard deviation (data)/mean (data). “Data” in this case is the raw optical transmission data, because otherwise the mean is close to zero. Channels above a certain threshold (CV > 7.5%, as used in [48]) indicate unphysiological noise and are excluded from further processing.
             cv = 100 * (np.std(processed_data.get_data(), axis=1) / np.mean(processed_data.get_data(), axis=1))
             self.bad_channels_cv = list(compress(processed_data.ch_names, cv > 7.5))
             # Go over the channels, if a "short length" channel is dropped, make sure the "long length" channel is also dropped
-            # Check the channel lengths and save it as sl or ll (Channels are built like this: 'S1_D1 757' or 'S1_D1 845' or 'S1_D1 844', etc.)
             # all_lengths = []
             # for channel in self.bad_channels_cv:
             #     length = channel[-3:]
@@ -140,7 +138,7 @@ class HbOData:
 
 
             # apply motion correction - Wavelet Filtering
-            processed_data = self.wavelet_filter_pywt(processed_data)
+            # processed_data = self.wavelet_filter_pywt(processed_data)
 
             # filter low and high frequency bands
             filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data

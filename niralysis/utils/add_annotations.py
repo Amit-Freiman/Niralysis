@@ -100,7 +100,9 @@ def set_events_from_psychopy_table(snirf_path,psychopy_path):
 
 def set_events_from_rec_delay(subject_A_path, subject_B_path):
 
-    snirf_a = mne.io.read_raw_snirf(subject_A_path, preload=True)
+    original_path = "C:\\Amit - General Folder\\MA_Thesis\\Analysis\\original_snirf"
+    name = subject_A_path.split('\\')[-1]
+    snirf_a = mne.io.read_raw_snirf((original_path + "\\" + name), preload=True)
     snirf_b = mne.io.read_raw_snirf(subject_B_path, preload=True)
     delay = get_delay(get_rec_start_time(snirf_a), get_rec_start_time(snirf_b))
     if delay < 0:
@@ -111,6 +113,16 @@ def set_events_from_rec_delay(subject_A_path, subject_B_path):
     snirf_b.annotations.description = snirf_a.annotations.description
     
     return snirf_b
+
+def set_events_from_original_file(path):
+
+    original_path = "C:\\Amit - General Folder\\MA_Thesis\\Analysis\\original_snirf"
+    snirf = mne.io.read_raw_snirf(path, preload=True)
+    # Extract the name of the file
+    name = path.split('\\')[-1]
+    snirf.set_annotations(mne.io.read_raw_snirf(original_path + "\\" + name, preload=True).annotations)
+
+    return snirf
 
     
 

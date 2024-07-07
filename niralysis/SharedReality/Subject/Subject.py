@@ -65,7 +65,7 @@ class Subject:
         else:
             raw_data = mne.io.read_raw_snirf(self.path, preload=True)
             raw_data = mne.preprocessing.nirs.optical_density(raw_data)
-            raw_data = raw_data.filte.r(l_freq=0.01, h_freq=0.5)
+            raw_data = raw_data.filter(l_freq=0.01, h_freq=0.5)
             raw_data.crop(event_details[START_COLUMN], event_details[END_COLUMN])
             event = Event(event_details[EVENT_COLUMN], raw_data=raw_data)
             event.preprocess(preprocessing_instructions)
