@@ -53,7 +53,7 @@ class HbOData:
     def preprocess(self, channels: Optional[int], with_storm: bool = True, low_freq: float = 0.01,
                    high_freq: float = 0.5,
                    path_length_factor: float = 0.6, scale: float = 0.1, invalid_source_thresh: int = 20,
-                   invalid_detectors_thresh: int = 20, with_optical_density = True, bad_channels: [str] = []):
+                   invalid_detectors_thresh: int = 20, with_optical_density=True, bad_channels: [str] = []):
         """
         Preprocess HbO measurements from a raw fNIRS signals within a SNIRF, across all channels.
         Preprocessing includes:
@@ -95,7 +95,8 @@ class HbOData:
                 self.invalid_detec = self.storm.invalid_detec(invalid_detectors_thresh)
 
             # convert intensity to optical density
-            processed_data = mne.preprocessing.nirs.optical_density(self.raw_data) if with_optical_density else self.raw_data
+            processed_data = mne.preprocessing.nirs.optical_density(
+                self.raw_data) if with_optical_density else self.raw_data
             processed_data = self.raw_data
             # evaluate the quality of the data using a scalp coupling index (SCI)
             sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
@@ -135,13 +136,12 @@ class HbOData:
             # print(f"Channels dropped due to high SCI: {self.bad_channels_sci}")
             processed_data = processed_data.drop_channels(self.bad_channels_sci)
 
-
-
             # apply motion correction - Wavelet Filtering
             # processed_data = self.wavelet_filter_pywt(processed_data)
 
             # filter low and high frequency bands
-            filtered_data = processed_data.filter(l_freq=low_freq, h_freq=high_freq)  if with_optical_density else processed_data
+            filtered_data = processed_data.filter(l_freq=low_freq,
+                                                  h_freq=high_freq) if with_optical_density else processed_data
 
             # convert from optical density to concentration difference
             concentrated_data = mne.preprocessing.nirs.beer_lambert_law(filtered_data, path_length_factor)
@@ -163,14 +163,12 @@ class HbOData:
             data_frame = scale * data_frame
             data_frame.insert(0, TIME_COLUMN, concentrated_data.times)
             self.all_data_frame = data_frame
-            self.user_data_frame = data_frame.iloc[:, channels] if channels else data_frame  # set given channels to focus
+            self.user_data_frame = data_frame.iloc[:,
+                                   channels] if channels else data_frame  # set given channels to focus
 
             return self.user_data_frame
         except Exception as e:
             print(e)
-
-
-
 
     def is_storm_invalid_channel(self, channel_name: str, with_storm: bool) -> bool:
         """
@@ -216,7 +214,7 @@ class HbOData:
             threshold = sigma * np.sqrt(2 * np.log(len(data_array)))
         coeffs[1:] = [pywt.threshold(i, value=threshold, mode='soft') for i in coeffs[1:]]
         filtered_data = pywt.waverec(coeffs, wavelet)
-        
+
         filtered_mne_data = data.copy()
         filtered_mne_data._data = filtered_data
         return filtered_mne_data
@@ -226,11 +224,9 @@ class HbOData:
             bad_channels = []
 
         channels_to_drop = [self.raw_data.ch_names[i] for i, ch_type in
-                            enumerate( self.raw_data.get_channel_types()) if ch_type != 'hbo' and ch_type != '757']
+                            enumerate(self.raw_data.get_channel_types()) if ch_type != 'hbo' and ch_type != '757']
         channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels if
-                                               f"{bad_channel} hbo" in self.raw_data.ch_names or
-                             f"{bad_channel} 757" for bad_channel in bad_channels if
-                                               f"{bad_channel} 757" in self.raw_data.ch_names]
+                                               f"{bad_channel} hbo" in self.raw_data.ch_names]
         data_frame_raw = self.raw_data.drop_channels(channels_to_drop)
         # Add channel names dropped to "bad_channels" attribute
         self.bad_channels = bad_channels
