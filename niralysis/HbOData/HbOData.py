@@ -220,3 +220,24 @@ class HbOData:
         filtered_mne_data = data.copy()
         filtered_mne_data._data = filtered_data
         return filtered_mne_data
+
+    def set_data_frame(self, bad_channels=None):
+        if bad_channels is None:
+            bad_channels = []
+
+        channels_to_drop = [self.raw_data.ch_names[i] for i, ch_type in
+                            enumerate( self.raw_data.get_channel_types()) if ch_type != 'hbo' and ch_type != '757']
+        channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels if
+                                               f"{bad_channel} hbo" in self.raw_data.ch_names or
+                             f"{bad_channel} 757" for bad_channel in bad_channels if
+                                               f"{bad_channel} 757" in self.raw_data.ch_names]
+        data_frame_raw = self.raw_data.drop_channels(channels_to_drop)
+        # Add channel names dropped to "bad_channels" attribute
+        self.bad_channels = bad_channels
+
+        data_frame = pd.DataFrame(data_frame_raw.get_data().T, columns=data_frame_raw.ch_names)
+
+        # convert to micro molar
+        data_frame.insert(0, TIME_COLUMN, data_frame_raw.times)
+        self.all_data_frame = data_frame_raw
+        self.user_data_frame = data_frame
