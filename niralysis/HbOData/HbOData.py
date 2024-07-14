@@ -226,7 +226,9 @@ class HbOData:
         channels_to_drop = [self.raw_data.ch_names[i] for i, ch_type in
                             enumerate(self.raw_data.get_channel_types()) if ch_type != 'hbo' and ch_type != '757']
         channels_to_drop = channels_to_drop + [f"{bad_channel} hbo" for bad_channel in bad_channels if
-                                               f"{bad_channel} hbo" in self.raw_data.ch_names]
+                                               f"{bad_channel} hbo" in self.raw_data.ch_names or
+                             f"{bad_channel} 757" for bad_channel in bad_channels if
+                                               f"{bad_channel} 757" in self.raw_data.ch_names]
         data_frame_raw = self.raw_data.drop_channels(channels_to_drop)
         # Add channel names dropped to "bad_channels" attribute
         self.bad_channels = bad_channels
