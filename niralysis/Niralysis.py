@@ -88,13 +88,17 @@ class Niralysis:
 
     ######## HbO ########
 
-    def set_full_hbo_data(self):
-        self.hbo_data.preprocess(channels=self.preprocessing_instructions.channels,
-                                 with_storm=self.preprocessing_instructions.with_storm,
-                                 low_freq=self.preprocessing_instructions.low_freq,
-                                 high_freq=self.preprocessing_instructions.high_freq,
-                                 path_length_factor=self.preprocessing_instructions.path_length_factor,
-                                 bad_channels=self.preprocessing_instructions.bad_channels)
+    def set_full_hbo_data(self, preprocess=False):
+        if preprocess:
+            self.hbo_data.preprocess(channels=self.preprocessing_instructions.channels,
+                                     with_storm=self.preprocessing_instructions.with_storm,
+                                     low_freq=self.preprocessing_instructions.low_freq,
+                                     high_freq=self.preprocessing_instructions.high_freq,
+                                     path_length_factor=self.preprocessing_instructions.path_length_factor,
+                                     bad_channels=self.preprocessing_instructions.bad_channels)
+        else:
+            self.hbo_data.set_data_frame(self.preprocessing_instructions.bad_channels)
+
 
     ######## STORM ########
         
