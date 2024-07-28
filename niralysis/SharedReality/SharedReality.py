@@ -120,9 +120,9 @@ class SharedReality:
         for i, event in enumerate(EVENTS_TABLE_NAMES):
             table_A = self.subject_A.get_event_data_table(i, event)
             table_B = self.subject_B.get_event_data_table(i, event)
-            scales = [DEFAULT_SCALE for _ in range(len(table_A.shape[0]))]
             name = "_1" if i < 4 else "_2" if i > 6 else ""
-            wavelet_coherence = WaveletCoherence(table_A, table_B, scales)
+            number_of_rows = min(table_A.shape[0], table_B.shape[0])
+            wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows))
             wavelet_coherence.set_wavelet_coherence()
             wavelet_coherence.get_coherence_heatmap()
             self.wavelet_coherence[event + name] = wavelet_coherence

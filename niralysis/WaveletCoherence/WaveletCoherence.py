@@ -5,11 +5,10 @@ import matplotlib.pyplot as plt
 
 
 class WaveletCoherence:
-    def __init__(self, subject_A: pd.DataFrame, subject_B: pd.DataFrame, scales, wavelet_type='cmor'):
+    def __init__(self, subject_A: pd.DataFrame, subject_B: pd.DataFrame, wavelet_type='cmor'):
         self.average_coherence = None
         self.subject_A = subject_A
         self.subject_B = subject_B
-        self.scales = scales
         self.wavelet_type = wavelet_type
         self.n_areas = self.subject_A.shape[1]
         self.coherence_df = None
@@ -63,7 +62,7 @@ class WaveletCoherence:
 
 
     def get_coherence_heatmap(self, path=None):
-        if not self.coherence_df:
+        if self.coherence_df.empty:
             raise ValueError('No coherence')
 
         # Plot the heat map
