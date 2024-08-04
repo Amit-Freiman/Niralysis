@@ -98,29 +98,24 @@ def set_events_from_psychopy_table(snirf_path,psychopy_path):
     snirf.annotations.onset = np.array([get_event_info(event, delay, psychopy, idx) for idx, event in enumerate(EVENTS)], dtype=float)
     return snirf
 
-def set_events_from_rec_delay(subject_A_path, subject_B_path):
+def set_events_from_rec_delay(events_file_path, subject_B_path):
 
-    original_path = "C:\\Amit - General Folder\\MA_Thesis\\Analysis\\original_snirf"
-    name = subject_A_path.split('\\')[-1]
-    snirf_a = mne.io.read_raw_snirf((original_path + "\\" + name), preload=True)
+    events_snirf = mne.io.read_raw_snirf(events_file_path, preload=True)
     snirf_b = mne.io.read_raw_snirf(subject_B_path, preload=True)
-    delay = get_delay(get_rec_start_time(snirf_a), get_rec_start_time(snirf_b))
+    delay = get_delay(get_rec_start_time(events_snirf), get_rec_start_time(snirf_b))
     if delay < 0:
-        snirf_b.annotations.onset = snirf_a.annotations.onset - abs(delay)
+        snirf_b.annotations.onset = events_snirf.annotations.onset - abs(delay)
     else:
-        snirf_b.annotations.onset = snirf_a.annotations.onset + abs(delay)
+        snirf_b.annotations.onset = events_snirf.annotations.onset + abs(delay)
 
-    snirf_b.annotations.description = snirf_a.annotations.description
+    snirf_b.annotations.description = events_snirf.annotations.description
     
     return snirf_b
 
-def set_events_from_original_file(path):
+def set_events_from_original_file(path, events_file):
 
-    original_path = "C:\\Amit - General Folder\\MA_Thesis\\Analysis\\original_snirf"
     snirf = mne.io.read_raw_snirf(path, preload=True)
-    # Extract the name of the file
-    name = path.split('\\')[-1]
-    snirf.set_annotations(mne.io.read_raw_snirf(original_path + "\\" + name, preload=True).annotations)
+    snirf.set_annotations(mne.io.read_raw_snirf(events_file, preload=True).annotations)
 
     return snirf
 
