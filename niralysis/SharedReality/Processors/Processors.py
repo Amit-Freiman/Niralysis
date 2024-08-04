@@ -107,10 +107,10 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
     ISC_tables = []
     for i, subject in enumerate(subjects):
         sum_subjects_exclude_i = mean_event_data_table(subject, merged_data, factor if not preprocess_by_event else None)
-        new_subject = Subject("")
-        new_subject.events_data = sum_subjects_exclude_i
-        isc_score = ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event)
-        get_low_auditory_isc_plot(isc_score, subject, new_subject)
+        mean_subject = Subject("")
+        mean_subject.events_data = sum_subjects_exclude_i
+        isc_score = ISC.subjects_ISC_by_events(subject, mean_subject, use_default_events=True, preprocess_by_event=preprocess_by_event)
+        get_low_auditory_isc_plot(isc_score, subject, mean_subject)
         ISC_tables.append(isc_score)
 
     main = calculate_mean_table(ISC_tables, factor)
