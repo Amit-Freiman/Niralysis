@@ -100,3 +100,38 @@ class Subject:
         return PreprocessingInstructions(areas_dict=areas_dict, bad_channels=bad_channels, low_freq=low_freq,
                                          high_freq=high_freq)
 
+
+    @staticmethod
+    def subject_handler(root, name, subject, subjects_list=None, preprocess_by_events=False):
+        path = os.path.join(root, name)
+        preprocessing_instructions = Subject.get_subjects_preprocessing_instructions(path)
+        if preprocessing_instructions is None:
+            date = root.split('\\')[-1]
+            templates = templates_handler(date)
+            template = templates[subject] if templates is not None else None
+            temp_dict = get_areas_dict(template)
+            preprocessing_instructions = PreprocessingInstructions(areas_dict=temp_dict)
+
+        if preprocessing_instructions.areas_dict is None:
+            date = root.split('\\')[-1]
+            templates = templates_handler(date)
+            if templates[subject] == 'S':
+                temp_dict = new_small
+            elif templates[subject] == 'M':
+                temp_dict = new_medium
+            elif templates[subject] == 'L':
+                temp_dict = new_large
+            else:
+                temp_dict = old_area_dict
+            preprocessing_instructions.areas_dict = temp_dict
+        if preprocessing_instructions.areas_dict is not None:
+            try:
+
+                subject = Subject(path, preprocess_by_events=preprocess_by_events,
+                                  preprocessing_instructions=preprocessing_instructions)
+                if subjects_list is not None:
+                    subjects_list.append(subject)
+                return subject
+            except Exception as e:
+                print(f"{name} failed: {e}")
+

@@ -4,14 +4,18 @@ from .Subject.Subject import Subject
 from .consts import *
 from niralysis.ISC.ISC import ISC
 from niralysis.Niralysis import Niralysis
+from ..WaveletCoherence.WaveletCoherence import WaveletCoherence
+
 
 class SharedReality:
-    def __init__(self, subject_A_path, subject_B_path):
-        self.subject_A_path = subject_A_path
-        self.subject_B_path = subject_B_path
-        self.subject_A = Subject(self.subject_A_path, preprocess_by_events=True)
-        self.subject_B = Subject(self.subject_B_path, preprocess_by_events=True)
+    def __init__(self, root, name):
+        self.subject_A_path = root + f"\\{name + "_A.snir"}"
+        self.subject_B_path = root + name + f"\\{name + "_B.snir"}"
+        self.subject_A = Subject.subject_handler(root, name + "_A.snirf",0)
+        self.subject_B = Subject.subject_handler(root, name + "_B.snirf", 1)
         self.ISC_table = None
+        self.wavelet_coherence = {}
+
 
     def candidates_handler(self, date):
         choices = {'31012024_0900': ('Roy', 'Roy', 'Sahar', 'Yael'),
@@ -111,3 +115,17 @@ class SharedReality:
             df.loc[TABLE_ROWS[i * 2 + 1]] = self.ISC_table.loc[candidate].iloc[1]
 
         return df
+
+    def get_wavelet_coherence_maps(self):
+        for i, event in enumerate(EVENTS_TABLE_NAMES):
+            table_A = self.subject_A.get_event_data_table(i, event)
+            table_B = self.subject_B.get_event_data_table(i, event)
+            name = "_1" if i < 4 else "_2" if i > 6 else ""
+            number_of_rows = min(table_A.shape[0], table_B.shape[0])
+            wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows))
+            wavelet_coherence.set_wavelet_coherence()
+            wavelet_coherence.get_coherence_heatmap()
+            self.wavelet_coherence[event + name] = wavelet_coherence
+
+
+
