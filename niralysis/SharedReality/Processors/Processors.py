@@ -32,21 +32,19 @@ def process_ISC_by_coupels(folder_path):
         snirf_files = [file for file in files if file.endswith(".snirf")]
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+        snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
 
         # If both -A and -B files exist in the folder, call the run function
         if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
-            path_A = os.path.join(root, snirf_files_A[0])
-            path_B = os.path.join(root, snirf_files_B[0])
+            has_B_2 = len(snirf_files_B_2) == 1
             date = root.split('\\')[-1]
-            sharedReality = SharedReality(path_A, path_B)
-            ISC_table = sharedReality.run(date)
+            shared_reality = SharedReality(root, date, has_B_2)
+            ISC_table = shared_reality.run(date)
             all_df.append(ISC_table)
             all_df_dates.append(date)
 
     main_table = pd.concat(all_df, keys=all_df_dates)
     return main_table
-
-
 
 
 
@@ -69,14 +67,14 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
 
 
-
         # If -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) >= 1:
             Subject.subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
         if len(snirf_files_B) >= 1:
             file_to_merge = snirf_files_B_2[0] if len(snirf_files_B_2) > 0 else None
-            Subject.subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event,  file_to_merge=file_to_merge)
+            Subject.subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event,
+                                    file_to_merge=file_to_merge)
 
     merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)
 
@@ -294,12 +292,13 @@ def create_all_heatmaps(folder_path, save_images_path, candidate_choices_path):
         snirf_files = [file for file in files if file.endswith(".snirf")]
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+        snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
 
         # If both -A and -B files exist in the folder, call the run function
         if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
-            path_A = os.path.join(root, snirf_files_A[0])
-            path_B = os.path.join(root, snirf_files_B[0])
-            sharedReality = SharedReality(path_A, path_B)
-            sharedReality.get_wavelet_coherence_maps(save_images_path, candidate_choices_path)
+            has_B_2 = len(snirf_files_B_2) == 1
+            date = root.split('\\')[-1]
+            shared_reality = SharedReality(root, date, has_B_2)
+            shared_reality.get_wavelet_coherence_maps(save_images_path, candidate_choices_path)
 
 
