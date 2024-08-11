@@ -14,14 +14,14 @@ from niralysis.utils.data_manipulation import set_data_by_areas, get_areas_dict
 
 class Subject:
     def __init__(self, path: str, preprocess_by_events: bool = False,
-                 preprocessing_instructions: PreprocessingInstructions = None):
+                 preprocessing_instructions: PreprocessingInstructions = None, file_to_merge=None):
         self.preprocessing_instructions = preprocessing_instructions
         if not path:
             self.events_data = None
         else:
             self.path = path
             self.name = path.split('\\')[-1].replace('.snirf', '')
-            self.subject = Niralysis(path, preprocessing_instructions)
+            self.subject = Niralysis(path, preprocessing_instructions, file_to_merge)
             self.subject.events_handler.set_continuous_events_frame()
             self.events_table = self.subject.events_handler.get_continuous_events_frame()
             self.events_data = None
@@ -102,8 +102,9 @@ class Subject:
 
 
     @staticmethod
-    def subject_handler(root, name, subject, subjects_list=None, preprocess_by_events=False):
+    def subject_handler(root, name, subject, subjects_list=None, preprocess_by_events=False, file_to_merge=None):
         path = os.path.join(root, name)
+        file_to_merge_path = os.path.join(root, file_to_merge) if file_to_merge is not None else None
         preprocessing_instructions = Subject.get_subjects_preprocessing_instructions(path)
         if preprocessing_instructions is None:
             date = root.split('\\')[-1]
@@ -128,7 +129,8 @@ class Subject:
             try:
 
                 subject = Subject(path, preprocess_by_events=preprocess_by_events,
-                                  preprocessing_instructions=preprocessing_instructions)
+                                  preprocessing_instructions=preprocessing_instructions,
+                                  file_to_merge=file_to_merge_path)
                 if subjects_list is not None:
                     subjects_list.append(subject)
                 return subject
