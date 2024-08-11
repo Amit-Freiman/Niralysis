@@ -56,7 +56,7 @@ class Niralysis:
         """ 
 
 
-    def __init__(self, snirf_fname: str, preprocessing_instructions = PreprocessingInstructions()):
+    def __init__(self, snirf_fname: str, preprocessing_instructions = PreprocessingInstructions(), file_to_merge=None):
 
         if type(snirf_fname) == pathlib.WindowsPath:
             snirf_fname = str(snirf_fname)
@@ -81,8 +81,8 @@ class Niralysis:
         self.old_sourc_loc = None
         self.old_detc_loc = None
         self.storm_fname = None
-        self.hbo_data = HbOData(snirf_fname)
-        self.events_handler = EventsHandler(snirf_fname)
+        self.hbo_data = HbOData(snirf_fname, file_to_merge=file_to_merge)
+        self.events_handler = EventsHandler(snirf_fname, file_to_merge=file_to_merge)
         self.preprocessing_instructions = preprocessing_instructions
 
 

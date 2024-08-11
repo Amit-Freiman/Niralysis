@@ -32,50 +32,20 @@ def process_ISC_by_coupels(folder_path):
         snirf_files = [file for file in files if file.endswith(".snirf")]
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+        snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
 
         # If both -A and -B files exist in the folder, call the run function
         if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
-            path_A = os.path.join(root, snirf_files_A[0])
-            path_B = os.path.join(root, snirf_files_B[0])
+            has_B_2 = len(snirf_files_B_2) == 1
             date = root.split('\\')[-1]
-            sharedReality = SharedReality(path_A, path_B)
-            ISC_table = sharedReality.run(date)
+            shared_reality = SharedReality(root, date, has_B_2)
+            ISC_table = shared_reality.run(date)
             all_df.append(ISC_table)
             all_df_dates.append(date)
 
     main_table = pd.concat(all_df, keys=all_df_dates)
     return main_table
 
-
-def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
-    path = os.path.join(root, name)
-    preprocessing_instructions = Subject.get_subjects_preprocessing_instructions(path)
-    if preprocessing_instructions is None:
-        date = root.split('\\')[-1]
-        templates = templates_handler(date)
-        template = templates[subject] if templates is not None else None
-        temp_dict = get_areas_dict(template)
-        preprocessing_instructions = PreprocessingInstructions(areas_dict=temp_dict)
-
-    if preprocessing_instructions.areas_dict is None:
-      date = root.split('\\')[-1]
-      templates = templates_handler(date)
-      if templates[subject] == 'S':
-          temp_dict = new_small
-      elif templates[subject] == 'M':
-          temp_dict = new_medium
-      elif templates[subject] == 'L':
-          temp_dict = new_large
-      else:
-          temp_dict = old_area_dict
-      preprocessing_instructions.areas_dict=temp_dict
-    if preprocessing_instructions.areas_dict is not None:
-        try:
-            subject = Subject(path, preprocess_by_events=preprocess_by_events,
-                              preprocessing_instructions=preprocessing_instructions)
-            subjects_list.append(subject)
-        except Exception as e:
-            print(f"{name} failed: {e}")
 
 
 def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
@@ -94,23 +64,27 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         snirf_files = [file for file in files if file.endswith(".snirf")]
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+        snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
+
 
         # If -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) >= 1:
-            subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
+            Subject.subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
         if len(snirf_files_B) >= 1:
-            subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
+            file_to_merge = snirf_files_B_2[0] if len(snirf_files_B_2) > 0 else None
+            Subject.subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event,
+                                    file_to_merge=file_to_merge)
 
     merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)
 
     ISC_tables = []
     for i, subject in enumerate(subjects):
         sum_subjects_exclude_i = mean_event_data_table(subject, merged_data, factor if not preprocess_by_event else None)
-        new_subject = Subject("")
-        new_subject.events_data = sum_subjects_exclude_i
-        isc_score = ISC.subjects_ISC_by_events(subject, new_subject, use_default_events=True, preprocess_by_event=preprocess_by_event)
-        get_low_auditory_isc_plot(isc_score, subject, new_subject)
+        mean_subject = Subject("")
+        mean_subject.events_data = sum_subjects_exclude_i
+        isc_score = ISC.subjects_ISC_by_events(subject, mean_subject, use_default_events=True, preprocess_by_event=preprocess_by_event)
+        get_low_auditory_isc_plot(isc_score, subject, mean_subject)
         ISC_tables.append(isc_score)
 
     main = calculate_mean_table(ISC_tables, factor)
@@ -138,10 +112,10 @@ def process_ISC_between_all_subjects_opposed_events(folder_path, preprocess_by_e
 
         # If  -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) >= 1:
-            subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
+            Subject.subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
         if len(snirf_files_B) >= 1:
-            subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
+            Subject.subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
 
     merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)
 
@@ -309,3 +283,22 @@ def process_nan_values(folder_path):
             subjects[subject_B.name] = count_nan_values(subject_B.get_hbo_data())
 
     return subjects
+
+
+def create_all_heatmaps(folder_path, save_images_path, candidate_choices_path):
+    # Iterate through all folders and subfolders
+    for root, dirs, files in os.walk(folder_path):
+        # Check if there are two snirf files, one ending with -A and the other ending with -B
+        snirf_files = [file for file in files if file.endswith(".snirf")]
+        snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
+        snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+        snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
+
+        # If both -A and -B files exist in the folder, call the run function
+        if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
+            has_B_2 = len(snirf_files_B_2) == 1
+            date = root.split('\\')[-1]
+            shared_reality = SharedReality(root, date, has_B_2)
+            shared_reality.get_wavelet_coherence_maps(save_images_path, candidate_choices_path)
+
+
