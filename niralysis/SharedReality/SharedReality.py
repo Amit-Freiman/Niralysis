@@ -126,8 +126,8 @@ class SharedReality:
             wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows),
                                                  path_to_save_maps, path_to_candidate_choices)
             name = wavelet_coherence.get_map_name(self.date, event, watch)
-            wavelet_coherence.set_wavelet_coherence()
-            wavelet_coherence.get_coherence_heatmap(name)
+            wavelet_coherence.set_wavelet_coherence_mean_wavelet()
+            wavelet_coherence.get_coherence_heatmap_x_time_y_areas(name)
             self.wavelet_coherence[name] = wavelet_coherence
 
 
