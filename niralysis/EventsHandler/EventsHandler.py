@@ -53,7 +53,7 @@ class EventsHandler:
             self.spotted_events = None
         
         if self.path.endswith("A.snirf") or self.path.endswith("A.snirf.gz"):
-            self.raw_data = set_events_from_original_file(self.path, self.path.replace("A", "events_file"))
+            self.raw_data = set_events_from_original_file(self.path, self.path.replace("_A", "_events_file"))
         # If snirf is B file, we need to take the A file and set the events
         if self.path.endswith("B.snirf") or self.path.endswith("B.snirf.gz"):
         # if self.raw_data.annotations.description.size == 0:

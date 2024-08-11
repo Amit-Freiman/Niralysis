@@ -10,7 +10,7 @@ def get_low_auditory_isc_plot(isc_table: pd.DataFrame, subject: Subject, mean: S
         if event_name in ['discussion:A', 'discussion:B', 'open discussion']:
             continue
 
-        if event["Primary Auditory Cortex"] == 0.2:
+        if event["Primary Auditory Cortex"] <= 0:
             subject_event_data_table = subject.get_event_data_table(index, event_name)
             mean_event_data_table = mean.get_event_data_table(index, event_name)
             y_subject = subject_event_data_table["Primary Auditory Cortex"]
