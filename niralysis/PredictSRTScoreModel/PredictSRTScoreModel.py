@@ -3,9 +3,13 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
+
+from niralysis.PredictSRTScoreModel.utils import create_image_score_arrays, prepare_data
+
+
 class PredictSRTScoreModal:
 
-    def __init__(self):
+    def __init__(self, images_folder_path, excel_file):
         self.base_model = None
         self.model = None
         self.X_train = None
@@ -14,9 +18,19 @@ class PredictSRTScoreModal:
         self.y_val = None
         self.X_test = None
         self.y_test = None
+        self.images_folder_path = images_folder_path
+        self.excel_file = excel_file
 
     def set_data(self):
-        pass
+        image_paths, scores = create_image_score_arrays(self.images_folder_path, self.excel_file)
+        X_train, X_val, X_test, y_train, y_val, y_test = prepare_data(image_paths, scores)
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_val = X_val
+        self.y_val = y_val
+        self.X_test = X_test
+        self.y_test = y_test
+
 
     def create_model(self):
 

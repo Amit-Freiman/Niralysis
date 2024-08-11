@@ -1,6 +1,9 @@
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
+import os
+import pandas as pd
+
 
 def load_and_preprocess_image(image_path, target_size=(64, 64)):
     """
@@ -46,3 +49,47 @@ def prepare_data(image_paths, scores, test_size=0.2, val_size=0.1, target_size=(
                                                       random_state=42)
 
     return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def create_image_score_arrays(images_folder, excel_file):
+    """
+    Create arrays of image paths and corresponding scores.
+
+    Args:
+    images_folder (str): Path to the folder containing heatmap images.
+    excel_file (str): Path to the Excel file containing the scores.
+
+    Returns:
+    tuple: (image_paths, scores)
+    """
+    # Load the Excel file
+    df = pd.read_excel(excel_file)
+
+    # Initialize lists to hold image paths and scores
+    image_paths = []
+    scores = []
+
+    # Iterate over the images in the folder
+    for image_name in os.listdir(images_folder):
+        # Skip non-image files
+        if not image_name.endswith(('.png', '.jpg', '.jpeg')):
+            continue
+
+        # Extract time, name, and watch from the image filename
+        date, choice, watch = image_name.rsplit('-')
+        watch = watch.split('.')[0]  # Remove the file extension from 'watch'
+
+        # Find the corresponding row in the Excel file
+        matching_row = df[(df['date'] == date) & (df['choices'] == choice) & (df['watch'] == watch)]
+
+        if not matching_row.empty:
+            # Get the score for the matching row
+            score = matching_row['score'].values[0]
+
+            # Append the image path and score to the lists
+            image_paths.append(os.path.join(images_folder, image_name))
+            scores.append(score)
+        else:
+            print(f"No matching entry found for image: {image_name}")
+
+    return image_paths, scores
