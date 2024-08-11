@@ -3,9 +3,12 @@ import pandas as pd
 import pywt
 import matplotlib.pyplot as plt
 
+from niralysis.SharedReality.consts import CandidateChoicesAndScoreXlsx
+
 
 class WaveletCoherence:
-    def __init__(self, subject_A: pd.DataFrame, subject_B: pd.DataFrame, wavelet_type='cmor'):
+    def __init__(self, subject_A: pd.DataFrame, subject_B: pd.DataFrame, path_to_save_maps=None,
+                 path_to_candidate_choices=None, wavelet_type='cmor'):
         self.average_coherence = None
         self.subject_A = subject_A
         self.subject_B = subject_B
@@ -14,9 +17,8 @@ class WaveletCoherence:
         self.coherence_df = None
         self.brain_areas = None
         self.time = None
-
-
-
+        self.path_to_save_maps = path_to_save_maps
+        self.candidate_choices = pd.read_excel(path_to_candidate_choices) if path_to_candidate_choices else None
 
     def set_wavelet_coherence(self, wavelet='cmor', scales=np.arange(1, 128), sampling_period=1):
         """
@@ -60,19 +62,26 @@ class WaveletCoherence:
         # Create a DataFrame from the coherence dictionary
         self.coherence_df = pd.DataFrame(coherence_dict, index=self.time)
 
-
-    def get_coherence_heatmap(self, path=None):
+    def get_coherence_heatmap(self, name=None, show=True):
         if self.coherence_df.empty:
             raise ValueError('No coherence')
 
         # Plot the heat map
         plt.figure(figsize=(12, 8))
-        plt.imshow(self.coherence_df.T, aspect='auto', cmap='viridis', extent=(self.time.min(), self.time.max(), 0,len(self.brain_areas)))
+        plt.imshow(self.coherence_df.T, aspect='auto', cmap='viridis',
+                   extent=(self.time.min(), self.time.max(), 0, len(self.brain_areas)))
         plt.colorbar(label='Coherence')
         plt.yticks(ticks=np.arange(len(self.brain_areas)), labels=self.brain_areas)
         plt.xlabel('Time')
         plt.ylabel('Brain Areas')
         plt.title('Wavelet Coherence Heat Map')
-        if path is not None:
-            plt.savefig(path)
-        plt.show()
+        if name is not None and self.path_to_save_maps is not None:
+            plt.savefig(f"{self.path_to_save_maps}\\{name}.png")
+        if show:
+            plt.show()
+
+    def get_map_name(self, date: str, event: str, watch: int):
+        if self.candidate_choices is None:
+            return f"{date}-{event}-{watch}"
+        choice = self.candidate_choices.loc[self.candidate_choices[CandidateChoicesAndScoreXlsx.CANDIDATE_NAME] == event, CandidateChoicesAndScoreXlsx.CHOICES].values[0]
+        return f"{date}-{choice}-{watch}"

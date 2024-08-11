@@ -281,3 +281,21 @@ def process_nan_values(folder_path):
             subjects[subject_B.name] = count_nan_values(subject_B.get_hbo_data())
 
     return subjects
+
+
+def create_all_heatmaps(folder_path, save_images_path, candidate_choices_path):
+    # Iterate through all folders and subfolders
+    for root, dirs, files in os.walk(folder_path):
+        # Check if there are two snirf files, one ending with -A and the other ending with -B
+        snirf_files = [file for file in files if file.endswith(".snirf")]
+        snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
+        snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+
+        # If both -A and -B files exist in the folder, call the run function
+        if len(snirf_files_A) == 1 and len(snirf_files_B) == 1:
+            path_A = os.path.join(root, snirf_files_A[0])
+            path_B = os.path.join(root, snirf_files_B[0])
+            sharedReality = SharedReality(path_A, path_B)
+            sharedReality.get_wavelet_coherence_maps(save_images_path, candidate_choices_path)
+
+

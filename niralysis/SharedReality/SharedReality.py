@@ -9,6 +9,7 @@ from ..WaveletCoherence.WaveletCoherence import WaveletCoherence
 
 class SharedReality:
     def __init__(self, root, name):
+        self.date = name
         self.subject_A_path = root + f"\\{name + "_A.snir"}"
         self.subject_B_path = root + name + f"\\{name + "_B.snir"}"
         self.subject_A = Subject.subject_handler(root, name + "_A.snirf",0)
@@ -116,16 +117,18 @@ class SharedReality:
 
         return df
 
-    def get_wavelet_coherence_maps(self):
-        for i, event in enumerate(EVENTS_TABLE_NAMES):
+    def get_wavelet_coherence_maps(self, path_to_save_maps = None, path_to_candidate_choices = None):
+        for i, event in enumerate(CANDIDATE_EVENTS_TABLE_NAMES):
             table_A = self.subject_A.get_event_data_table(i, event)
             table_B = self.subject_B.get_event_data_table(i, event)
-            name = "_1" if i < 4 else "_2" if i > 6 else ""
+            watch = 1 if i < 4 else 2
             number_of_rows = min(table_A.shape[0], table_B.shape[0])
-            wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows))
+            wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows),
+                                                 path_to_save_maps, path_to_candidate_choices)
+            name = wavelet_coherence.get_map_name(self.date, event, watch)
             wavelet_coherence.set_wavelet_coherence()
-            wavelet_coherence.get_coherence_heatmap()
-            self.wavelet_coherence[event + name] = wavelet_coherence
+            wavelet_coherence.get_coherence_heatmap(name)
+            self.wavelet_coherence[name] = wavelet_coherence
 
 
 
