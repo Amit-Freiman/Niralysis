@@ -20,8 +20,11 @@ class EventsHandler:
     """
 
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, file_to_merge=None):
         self.raw_data = mne.io.read_raw_snirf(path, preload=True)
+        if path and file_to_merge is not None:
+            raw_data_2 = mne.io.read_raw_snirf(file_to_merge, preload=True)
+            self.raw_data = mne.concatenate_raws([self.raw_data, raw_data_2])
         self.path = path
         self.continuous_events = None
         self.spotted_events = None

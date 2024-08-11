@@ -47,8 +47,9 @@ def process_ISC_by_coupels(folder_path):
     return main_table
 
 
-def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
+def subject_handler(root, name, subject, subjects_list, preprocess_by_events, file_to_merge=None):
     path = os.path.join(root, name)
+    file_to_merge_path = os.path.join(root, file_to_merge) if file_to_merge is not None else None
     preprocessing_instructions = Subject.get_subjects_preprocessing_instructions(path)
     if preprocessing_instructions is None:
         date = root.split('\\')[-1]
@@ -72,7 +73,7 @@ def subject_handler(root, name, subject, subjects_list, preprocess_by_events):
     if preprocessing_instructions.areas_dict is not None:
         try:
             subject = Subject(path, preprocess_by_events=preprocess_by_events,
-                              preprocessing_instructions=preprocessing_instructions)
+                              preprocessing_instructions=preprocessing_instructions, file_to_merge=file_to_merge_path)
             subjects_list.append(subject)
         except Exception as e:
             print(f"{name} failed: {e}")
@@ -94,13 +95,18 @@ def process_ISC_between_all_subjects(folder_path, preprocess_by_event: bool):
         snirf_files = [file for file in files if file.endswith(".snirf")]
         snirf_files_A = [file for file in snirf_files if file.endswith("A.snirf")]
         snirf_files_B = [file for file in snirf_files if file.endswith("B.snirf")]
+        snirf_files_B_2 = [file for file in snirf_files if file.endswith("B_2.snirf")]
+
+
 
         # If -A or -B files exist in the folder, call the run function
         if len(snirf_files_A) >= 1:
             subject_handler(root, snirf_files_A[0], 0, subjects, preprocess_by_event)
 
         if len(snirf_files_B) >= 1:
-            subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event)
+            file_to_merge = snirf_files_B_2[0] if len(snirf_files_B_2) > 0 else None
+            subject_handler(root, snirf_files_B[0], 1, subjects, preprocess_by_event, file_to_merge=file_to_merge)
+
 
     merged_data, factor = merge_event_data_table(subjects, preprocess_by_event)
 

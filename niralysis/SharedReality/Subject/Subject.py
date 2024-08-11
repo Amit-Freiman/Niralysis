@@ -14,14 +14,14 @@ from niralysis.utils.data_manipulation import set_data_by_areas, get_areas_dict
 
 class Subject:
     def __init__(self, path: str, preprocess_by_events: bool = False,
-                 preprocessing_instructions: PreprocessingInstructions = None):
+                 preprocessing_instructions: PreprocessingInstructions = None, file_to_merge=None):
         self.preprocessing_instructions = preprocessing_instructions
         if not path:
             self.events_data = None
         else:
             self.path = path
             self.name = path.split('\\')[-1].replace('.snirf', '')
-            self.subject = Niralysis(path, preprocessing_instructions)
+            self.subject = Niralysis(path, preprocessing_instructions, file_to_merge)
             self.subject.events_handler.set_continuous_events_frame()
             self.events_table = self.subject.events_handler.get_continuous_events_frame()
             self.events_data = None
