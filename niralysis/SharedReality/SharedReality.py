@@ -2,6 +2,8 @@ import pandas as pd
 
 from .Subject.Subject import Subject
 from .consts import *
+from ..utils.consts import *
+from ..utils.data_manipulation import get_data_in_time_range, get_data_frames_with_equal_rows_number
 from niralysis.ISC.ISC import ISC
 from niralysis.Niralysis import Niralysis
 from ..WaveletCoherence.WaveletCoherence import WaveletCoherence
@@ -100,14 +102,20 @@ class SharedReality:
 
     def run(self, date) -> pd.DataFrame:
 
-        if not self.check_device_order(SUBJECT_A):
-            self.flip_device_order(SUBJECT_A)
-        if not self.check_device_order(SUBJECT_B):
-            self.flip_device_order(SUBJECT_B)
+        # if not self.check_device_order(SUBJECT_A):
+        #     self.flip_device_order(SUBJECT_A)
+        # if not self.check_device_order(SUBJECT_B):
+        #     self.flip_device_order(SUBJECT_B)
+        A_begining = self.subject_A.events_table[START_COLUMN].iloc[0]
+        B_begining = self.subject_B.events_table[START_COLUMN].iloc[0]
+        A_end = self.subject_A.events_table[END_COLUMN].iloc[-1]
+        B_end = self.subject_B.events_table[END_COLUMN].iloc[-1]
+        A_data = get_data_in_time_range(self.subject_A.get_hbo_data(), A_begining, A_end)
+        B_data = get_data_in_time_range(self.subject_B.get_hbo_data(), B_begining, B_end)
+        A_data, B_data = get_data_frames_with_equal_rows_number(A_data, B_data)
 
         self.ISC_table = ISC.ISC_by_events(self.subject_A.events_table, self.subject_B.events_table,
-                                           self.subject_A.get_hbo_data(), self.subject_B.get_hbo_data(),
-                                           by_areas=old_area_dict)
+                                           A_data,B_data)
 
         A_pre_choice, B_pre_choice, post_choice, control = self.candidates_handler(date)
         df = pd.DataFrame(index=TABLE_ROWS, columns=self.ISC_table.columns)
