@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 
-from niralysis.PredictSRTScoreModel.utils import create_image_score_arrays, prepare_data
+from niralysis.PredictSRTScoreModel.utils import create_image_score_arrays, prepare_data, plot_model_analysis
 
 
 class PredictSRTScoreModal:
@@ -20,6 +20,7 @@ class PredictSRTScoreModal:
         self.y_test = None
         self.images_folder_path = images_folder_path
         self.excel_file = excel_file
+        self.history = None
 
     def set_data(self):
         image_paths, scores = create_image_score_arrays(self.images_folder_path, self.excel_file)
@@ -30,7 +31,6 @@ class PredictSRTScoreModal:
         self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
-
 
     def create_model(self):
 
@@ -70,7 +70,7 @@ class PredictSRTScoreModal:
         self.model.compile(optimizer=Adam(learning_rate=1e-5), loss='mse', metrics=['mae'])
 
         # Continue training the model
-        history_fine = self.model.fit(self.X_train, self.y_train, epochs=20, validation_data=(self.X_val, self.y_val),
+        self.history = self.model.fit(self.X_train, self.y_train, epochs=20, validation_data=(self.X_val, self.y_val),
                                  callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5),
                                             tf.keras.callbacks.ModelCheckpoint('best_model_fine.h5', save_best_only=True)])
 
@@ -99,6 +99,8 @@ class PredictSRTScoreModal:
         plt.ylabel('Predicted Scores')
         plt.title('Actual vs Predicted Heatmap Scores')
         plt.show()
+
+        plot_model_analysis(self.history, self.model, self.X_test, self.y_test)
     def run(self):
         self.set_data()
         self.create_model()

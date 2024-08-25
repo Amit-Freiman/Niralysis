@@ -3,6 +3,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def load_and_preprocess_image(image_path, target_size=(64, 64)):
@@ -93,3 +94,59 @@ def create_image_score_arrays(images_folder, excel_file):
             print(f"No matching entry found for image: {image_name}")
 
     return image_paths, scores
+
+
+def plot_model_analysis(history, model, X_test, y_test):
+    """
+    Analyze and plot the model's performance.
+
+    Args:
+    history: History object returned by model.fit() containing training metrics.
+    model: Trained Keras model.
+    X_test: Test data (features).
+    y_test: Test data (labels).
+    """
+
+    # 1. Plot training & validation loss values
+    plt.figure(figsize=(14, 6))
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title('Model Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss (MSE)')
+    plt.legend(loc='upper right')
+
+    # 2. Plot training & validation MAE values
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['mae'], label='Train MAE')
+    plt.plot(history.history['val_mae'], label='Validation MAE')
+    plt.title('Model MAE')
+    plt.xlabel('Epoch')
+    plt.ylabel('Mean Absolute Error (MAE)')
+    plt.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+    # 3. Predicted vs Actual values
+    y_pred = model.predict(X_test)
+
+    plt.figure(figsize=(7, 7))
+    plt.scatter(y_test, y_pred, alpha=0.5)
+    plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], 'r--')  # 45-degree line
+    plt.title('Predicted vs Actual')
+    plt.xlabel('Actual Scores')
+    plt.ylabel('Predicted Scores')
+    plt.show()
+
+    # 4. Residuals plot
+    residuals = y_test - y_pred.flatten()
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(residuals, bins=30, alpha=0.7, color='blue')
+    plt.title('Residuals Distribution')
+    plt.xlabel('Residual (Actual - Predicted)')
+    plt.ylabel('Frequency')
+    plt.show()
+
