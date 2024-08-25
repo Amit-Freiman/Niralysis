@@ -11,7 +11,7 @@ class SharedReality:
     def __init__(self, root, name, has_B_2 = False):
         self.date = name
         self.subject_A_path = root + f"\\{name + "_A.snir"}"
-        self.subject_B_path = root + name + f"\\{name + "_B.snir"}"
+        self.subject_B_path = root + f"\\{name + "_B.snir"}"
         self.subject_A = Subject.subject_handler(root, name + "_A.snirf",0)
         self.subject_B = Subject.subject_handler(root, name + "_B.snirf", 1,
                                                  file_to_merge=name + "_B_2.snirf" if has_B_2 else None)
