@@ -12,8 +12,8 @@ from ..WaveletCoherence.WaveletCoherence import WaveletCoherence
 class SharedReality:
     def __init__(self, root, name, has_B_2 = False):
         self.date = name
-        self.subject_A_path = root + f"\\{name + "_A.snir"}"
-        self.subject_B_path = root + f"\\{name + "_B.snir"}"
+        self.subject_A_path = root + f"\\{name}_A.snirf"
+        self.subject_B_path = root + f"\\{name}_B.snirf"
         self.subject_A = Subject.subject_handler(root, name + "_A.snirf",0)
         self.subject_B = Subject.subject_handler(root, name + "_B.snirf", 1,
                                                  file_to_merge=name + "_B_2.snirf" if has_B_2 else None)
@@ -22,20 +22,20 @@ class SharedReality:
 
 
     def candidates_handler(self, date):
-        choices = {'31012024_0900': ('Roy', 'Roy', 'Sahar', 'Yael'),
-                   '24012024_1400': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '01022024_1610': ('Alon', 'Roy', 'Sahar', 'Yael'),
-                   '06022024_1400': ('Alon', 'Roy', 'Alon', 'Sahar'),
-                   '07022024_1600': ('Roy', 'Yael', 'Roy', 'Sahar'),
-                   '01022024_1000': ('Roy', 'Sahar', 'Roy', 'Yael'),
-                   '31012024_1600': ('Roy', 'Alon', 'Roy', 'Yael'),
-                   '01042024_1210': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '04032024_1200': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '06032024_1600': ('Roy', 'Roy', 'Yael', 'Sahar'),
-                   '07032024_1000': ('Roy', 'Alon', 'Roy', 'Yael'),
-                   '08022024_1400': ('Alon', 'Alon', 'Roy', 'Yael'),
-                   '11032024_1145': ('Roy', 'Roy', 'Alon', 'Yael'),
-                   '12032024_1410': ('Roy', 'Yael', 'Roy', 'Sahar'),
+        choices = {'31012024_0900': ('Roy', 'Sahar', 'Roy', 'Yael'),
+                   '24012024_1400': ('Alon', 'Roy', 'Roy',  'Sahar'),
+                   '01022024_1610': ('Roy', 'Sahar', 'Alon', 'Yael'),
+                   '06022024_1400': ('Roy', 'Alon', 'Alon', 'Sahar'),
+                   '07022024_1600': ('Yael', 'Roy', 'Roy', 'Sahar'),
+                   '01022024_1000': ('Sahar', 'Roy', 'Roy', 'Yael'),
+                   '31012024_1600': ('Alon', 'Roy', 'Roy', 'Yael'),
+                   '01042024_1210': ('Alon', 'Roy', 'Roy', 'Sahar'),
+                   '04032024_1200': ('Alon', 'Roy', 'Roy', 'Sahar'),
+                   '06032024_1600': ('Roy', 'Yael', 'Roy', 'Sahar'),
+                   '07032024_1000': ('Alon', 'Roy', 'Roy', 'Yael'),
+                   '08022024_1400': ('Alon', 'Roy', 'Alon', 'Yael'),
+                   '11032024_1145': ('Roy', 'Alon', 'Roy', 'Yael'),
+                   '12032024_1410': ('Yael', 'Roy', 'Roy', 'Sahar'),
                    }
         return choices[date]
     
