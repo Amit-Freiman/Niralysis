@@ -15,7 +15,7 @@ old_area_dict = {
     "Secondary Auditory Cortex": ["S7_D6"],
     "Broca": ["S12_D6", "S7_D6"],
     "Wernicke": ["S13_D7"],
-    "Occipital Cortex (V1)": ["S18_D11", "S19_D11", "S20_D11", "S21_D11"] 
+    "Occipital Cortex (V1)": ["S18_D11", "S19_D11", "S20_D11", "S21_D11"]
 }
 
 new_medium = {
@@ -28,7 +28,7 @@ new_medium = {
     "left vmPFC": ["S8_D5"],
     "right dlPFC": ["S6_D3", "S6_D4", "S7_D4"],
     "right vlPFC": ["S4_D3", "S4_D4"],
-    "right dmPFC": ["S6_D5", "S6_D6", "S7_D6"],    
+    "right dmPFC": ["S6_D5", "S6_D6", "S7_D6"],
     "right vmPFC": ["S5_D5"],
 
     # "Primary Auditory Cortex": ["S14_D11"],
@@ -41,7 +41,7 @@ new_medium = {
     "Primary Auditory Cortex": ["S14_D11", "S14_D10", "S14_D13"],
     "Broca": ["S12_D9", "S12_D10"],
     "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
-    "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"] 
+    "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"]
 }
 
 new_small = {
@@ -54,7 +54,7 @@ new_small = {
     "left vmPFC": ["S8_D5"],
     "right dlPFC": ["S6_D3", "S6_D4", "S7_D4"],
     "right vlPFC": ["S4_D3", "S4_D4"],
-    "right dmPFC": ["S6_D5", "S6_D6", "S7_D6"],    
+    "right dmPFC": ["S6_D5", "S6_D6", "S7_D6"],
     "right vmPFC": ["S5_D5"],
 
     # "Primary Auditory Cortex": ["S14_D13", "S16_D13"],
@@ -64,14 +64,14 @@ new_small = {
     # "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
     # "Somatosensory Cortex (M1/S1)": ["S12_D11", "S14_D11", "S13_D12", "S13_D11"] 
 
-    "Primary Auditory Cortex": ["S14_D13", "S16_D13","S14_D10"],
+    "Primary Auditory Cortex": ["S14_D13", "S16_D13", "S14_D10"],
     "Broca": ["S12_D9"],
     "Occipital Cortex (V1)": ["S18_D16", "S20_D16", "S18_D15", "S20_D15"],
-    "Somatosensory Cortex (M1/S1)": ["S12_D11", "S14_D11", "S13_D12", "S13_D11"] 
+    "Somatosensory Cortex (M1/S1)": ["S12_D11", "S14_D11", "S13_D12", "S13_D11"]
 
 }
 new_large = {
-    "left TPJ": ["S16_D11","S16_D13", "S15_D13"],
+    "left TPJ": ["S16_D11", "S16_D13", "S15_D13"],
     "right TPJ": ["S1_D1", "S2_D1"],
 
     "left vlPFC": [],
@@ -80,7 +80,7 @@ new_large = {
     "left vmPFC": [],
     "right dlPFC": ["S5_D3", "S5_D4", "S6_D4"],
     "right vlPFC": ["S4_D3", "S4_D4"],
-    "right dmPFC": ["S6_D5", "S6_D6", "S7_D6", "S5_D5"],    
+    "right dmPFC": ["S6_D5", "S6_D6", "S7_D6", "S5_D5"],
     "right vmPFC": [],
 
     # "Primary Auditory Cortex": ["S14_D11"],
@@ -93,27 +93,29 @@ new_large = {
     "Primary Auditory Cortex": ["S14_D11", "S14_D10", "S14_D13"],
     "Broca": ["S12_D9", "S12_D10"],
     "Occipital Cortex (V1)": ["S17_D15", "S18_D15", "S19_D15", "S20_D15"],
-    "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"] 
+    "Somatosensory Cortex (M1/S1)": ["S12_D11", "S13_D12", "S13_D11"]
 }
 
+
 def templates_handler(date):
-    choices = {'31012024_0900': ('S','M'),
-            '24012024_1400': ('S','S'),
-            '01022024_1610': ('M','S'),
-            '06022024_1400': ('S','S'),
-            '07022024_1600': ('M','S'),
-            '01022024_1000': ('L', 'M'),
-            '31012024_1600': ('S', 'M'),
-            '01042024_1210': ('M', 'M'),
-            '04032024_1200': ('M', 'L'),
-            '06032024_1600': ('S', 'M'),
-            '07032024_1000': ('M', 'M'),
-            '08022024_1400': ('S', 'S'),
-            '11032024_1145': ('M', 'M'),
-            '12032024_1410': ('M', 'L')
-                }
+    choices = {'31012024_0900': ('S', 'M'),
+               '24012024_1400': ('S', 'S'),
+               '01022024_1610': ('M', 'S'),
+               '06022024_1400': ('S', 'S'),
+               '07022024_1600': ('M', 'S'),
+               '01022024_1000': ('L', 'M'),
+               '31012024_1600': ('S', 'M'),
+               '01042024_1210': ('M', 'M'),
+               '04032024_1200': ('M', 'L'),
+               '06032024_1600': ('S', 'M'),
+               '07032024_1000': ('M', 'M'),
+               '08022024_1400': ('S', 'S'),
+               '11032024_1145': ('M', 'M'),
+               '12032024_1410': ('M', 'L')
+               }
 
     return choices.get(date)
+
 
 SUBJECT_A = "A"
 SUBJECT_B = "B"
@@ -135,6 +137,7 @@ UNIQUE_COMBINATION = "S8_D5"
 EVENTS_TABLE_NAMES = ["Yael", "Roy", "Sahar", "Alon", "discussion:A", "discussion:B", "open discussion", "Yael", "Roy",
                       "Sahar",
                       "Alon"]
+CANDIDATE_EVENTS_TABLE_NAMES = ["Yael", "Roy", "Sahar", "Alon", "Yael", "Roy", "Sahar", "Alon"]
 
 DATA = "data"
 NAME = "name"
@@ -168,7 +171,6 @@ SUBJECT = "Subject (A/B)"
 LOW_FREQ = "Low frequency"
 HIGH_FREQ = "High frequency"
 
-
 ## diffault Values
 DEFAULT_LOW_FREQ = 0.01
 DEFAULT_HIGH_FREQ = 0.5
@@ -176,3 +178,12 @@ DEFAULT_PATH_LENGTH_FACTOR = 0.6
 DEFAULT_SCALE = 0.1
 DEFAULT_INVALID_SOURCE_THRESH = 20
 DEFAULT_INVALID_DETECTORS_THRESH = 20
+
+
+# candidate choices and score xlsx
+class CandidateChoicesAndScoreXlsx:
+    DATE = "date"
+    CANDIDATE_NAME = "candidate"
+    CHOICES = "choices"
+    WATCH = "watch"
+    SCORE = "score"
