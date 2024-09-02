@@ -97,7 +97,6 @@ class HbOData:
             # convert intensity to optical density
             processed_data = mne.preprocessing.nirs.optical_density(
                 self.raw_data) if with_optical_density else self.raw_data
-            processed_data = self.raw_data
             # evaluate the quality of the data using a scalp coupling index (SCI)
             sci = mne.preprocessing.nirs.scalp_coupling_index(processed_data)
             self.bad_channels_sci = list(compress(processed_data.ch_names, sci < 0.7))

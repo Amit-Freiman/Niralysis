@@ -2,37 +2,41 @@ import pandas as pd
 
 from .Subject.Subject import Subject
 from .consts import *
+from ..utils.consts import *
+from ..utils.data_manipulation import get_data_in_time_range, get_data_frames_with_equal_rows_number
 from niralysis.ISC.ISC import ISC
 from niralysis.Niralysis import Niralysis
 from ..WaveletCoherence.WaveletCoherence import WaveletCoherence
 
 
 class SharedReality:
-    def __init__(self, root, name):
+    def __init__(self, root, name, has_B_2 = False):
+        print(f"Building shared reality for {name}")
         self.date = name
-        self.subject_A_path = root + f"\\{name + "_A.snir"}"
-        self.subject_B_path = root + name + f"\\{name + "_B.snir"}"
+        self.subject_A_path = root + f"\\{name}_A.snirf"
+        self.subject_B_path = root + f"\\{name}_B.snirf"
         self.subject_A = Subject.subject_handler(root, name + "_A.snirf",0)
-        self.subject_B = Subject.subject_handler(root, name + "_B.snirf", 1)
+        self.subject_B = Subject.subject_handler(root, name + "_B.snirf", 1,
+                                                 file_to_merge=name + "_B_2.snirf" if has_B_2 else None)
         self.ISC_table = None
         self.wavelet_coherence = {}
 
 
     def candidates_handler(self, date):
-        choices = {'31012024_0900': ('Roy', 'Roy', 'Sahar', 'Yael'),
-                   '24012024_1400': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '01022024_1610': ('Alon', 'Roy', 'Sahar', 'Yael'),
-                   '06022024_1400': ('Alon', 'Roy', 'Alon', 'Sahar'),
-                   '07022024_1600': ('Roy', 'Yael', 'Roy', 'Sahar'),
-                   '01022024_1000': ('Roy', 'Sahar', 'Roy', 'Yael'),
-                   '31012024_1600': ('Roy', 'Alon', 'Roy', 'Yael'),
-                   '01042024_1210': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '04032024_1200': ('Roy', 'Alon', 'Roy', 'Sahar'),
-                   '06032024_1600': ('Roy', 'Roy', 'Yael', 'Sahar'),
-                   '07032024_1000': ('Roy', 'Alon', 'Roy', 'Yael'),
-                   '08022024_1400': ('Alon', 'Alon', 'Roy', 'Yael'),
-                   '11032024_1145': ('Roy', 'Roy', 'Alon', 'Yael'),
-                   '12032024_1410': ('Roy', 'Yael', 'Roy', 'Sahar'),
+        choices = {'31012024_0900': ('Roy', 'Sahar', 'Roy', 'Yael'),
+                   '24012024_1400': ('Alon', 'Roy', 'Roy',  'Sahar'),
+                   '01022024_1610': ('Roy', 'Sahar', 'Alon', 'Yael'),
+                   '06022024_1400': ('Roy', 'Alon', 'Alon', 'Sahar'),
+                   '07022024_1600': ('Yael', 'Roy', 'Roy', 'Sahar'),
+                   '01022024_1000': ('Sahar', 'Roy', 'Roy', 'Yael'),
+                   '31012024_1600': ('Alon', 'Roy', 'Roy', 'Yael'),
+                   '01042024_1210': ('Alon', 'Roy', 'Roy', 'Sahar'),
+                   '04032024_1200': ('Alon', 'Roy', 'Roy', 'Sahar'),
+                   '06032024_1600': ('Roy', 'Yael', 'Roy', 'Sahar'),
+                   '07032024_1000': ('Alon', 'Roy', 'Roy', 'Yael'),
+                   '08022024_1400': ('Alon', 'Roy', 'Alon', 'Yael'),
+                   '11032024_1145': ('Roy', 'Alon', 'Roy', 'Yael'),
+                   '12032024_1410': ('Yael', 'Roy', 'Roy', 'Sahar'),
                    }
         return choices[date]
     
@@ -99,14 +103,20 @@ class SharedReality:
 
     def run(self, date) -> pd.DataFrame:
 
-        if not self.check_device_order(SUBJECT_A):
-            self.flip_device_order(SUBJECT_A)
-        if not self.check_device_order(SUBJECT_B):
-            self.flip_device_order(SUBJECT_B)
+        # if not self.check_device_order(SUBJECT_A):
+        #     self.flip_device_order(SUBJECT_A)
+        # if not self.check_device_order(SUBJECT_B):
+        #     self.flip_device_order(SUBJECT_B)
+        A_begining = self.subject_A.events_table[START_COLUMN].iloc[0]
+        B_begining = self.subject_B.events_table[START_COLUMN].iloc[0]
+        A_end = self.subject_A.events_table[END_COLUMN].iloc[-1]
+        B_end = self.subject_B.events_table[END_COLUMN].iloc[-1]
+        A_data = get_data_in_time_range(self.subject_A.get_hbo_data(), A_begining, A_end)
+        B_data = get_data_in_time_range(self.subject_B.get_hbo_data(), B_begining, B_end)
+        A_data, B_data = get_data_frames_with_equal_rows_number(A_data, B_data)
 
         self.ISC_table = ISC.ISC_by_events(self.subject_A.events_table, self.subject_B.events_table,
-                                           self.subject_A.get_hbo_data(), self.subject_B.get_hbo_data(),
-                                           by_areas=old_area_dict)
+                                           A_data,B_data)
 
         A_pre_choice, B_pre_choice, post_choice, control = self.candidates_handler(date)
         df = pd.DataFrame(index=TABLE_ROWS, columns=self.ISC_table.columns)
@@ -118,7 +128,10 @@ class SharedReality:
         return df
 
     def get_wavelet_coherence_maps(self, path_to_save_maps = None, path_to_candidate_choices = None):
-        for i, event in enumerate(CANDIDATE_EVENTS_TABLE_NAMES):
+        for i, event in enumerate(EVENTS_TABLE_NAMES):
+            if i > 3 and i < 7:
+                continue
+            print(f"get_wavelet_coherence_maps date {self.date} event {event}")
             table_A = self.subject_A.get_event_data_table(i, event)
             table_B = self.subject_B.get_event_data_table(i, event)
             watch = 1 if i < 4 else 2
@@ -126,9 +139,9 @@ class SharedReality:
             wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows),
                                                  path_to_save_maps, path_to_candidate_choices)
             name = wavelet_coherence.get_map_name(self.date, event, watch)
-            wavelet_coherence.set_wavelet_coherence_mean_wavelet()
-            wavelet_coherence.get_coherence_heatmap_x_time_y_areas(name)
+            wavelet_coherence.plot_wavelet_coherence_heatmaps(name)
             self.wavelet_coherence[name] = wavelet_coherence
+
 
 
 
