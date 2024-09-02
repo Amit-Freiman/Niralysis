@@ -1,3 +1,5 @@
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.optimizers import Adam
@@ -60,7 +62,7 @@ class PredictSRTScoreModal:
         # Train the model
         history = self.model.fit(self.X_train, self.y_train, epochs=20, validation_data=(self.X_val, self.y_val),
                             callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5),
-                                       tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True)])
+                                       tf.keras.callbacks.ModelCheckpoint('best_model.keras', save_best_only=True)])
 
         # Fine-tuning: Unfreeze some layers and retrain
         for layer in self.base_model.layers[-10:]:  # Unfreeze the last 10 layers
@@ -72,7 +74,7 @@ class PredictSRTScoreModal:
         # Continue training the model
         self.history = self.model.fit(self.X_train, self.y_train, epochs=20, validation_data=(self.X_val, self.y_val),
                                  callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5),
-                                            tf.keras.callbacks.ModelCheckpoint('best_model_fine.h5', save_best_only=True)])
+                                            tf.keras.callbacks.ModelCheckpoint('best_model_fine.keras', save_best_only=True)])
 
     def evaluate(self):
         # Evaluate the model

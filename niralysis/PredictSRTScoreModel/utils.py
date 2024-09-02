@@ -81,7 +81,7 @@ def create_image_score_arrays(images_folder, excel_file):
         watch = watch.split('.')[0]  # Remove the file extension from 'watch'
 
         # Find the corresponding row in the Excel file
-        matching_row = df[(df['date'] == date) & (df['choices'] == choice) & (df['watch'] == watch)]
+        matching_row = df[(df['date'] == date) & (df['choices'] == choice) & (df['watch'] == int(watch))]
 
         if not matching_row.empty:
             # Get the score for the matching row
