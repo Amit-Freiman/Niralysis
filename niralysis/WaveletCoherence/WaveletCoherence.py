@@ -21,7 +21,7 @@ class WaveletCoherence:
         self.candidate_choices = pd.read_excel(path_to_candidate_choices) if path_to_candidate_choices else None
         self.plt = None
         self.sampling_rate = 0.02
-        self.scales = np.arange(500, 1700)
+        self.scales = np.arange(600, 1700)
 
 
 
