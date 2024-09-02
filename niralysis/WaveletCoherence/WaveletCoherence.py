@@ -21,7 +21,7 @@ class WaveletCoherence:
         self.candidate_choices = pd.read_excel(path_to_candidate_choices) if path_to_candidate_choices else None
         self.plt = None
         self.sampling_rate = 0.02
-        self.scales = np.arange(300, 1200)
+        self.scales = np.arange(500, 1700)
 
 
 
@@ -135,7 +135,7 @@ class WaveletCoherence:
             Sxy = np.conj(coeffs_x) * coeffs_y
             self.coherence_df.append(np.abs(Sxy) ** 2 / (Sxx * Syy))
 
-    def plot_wavelet_coherence_heatmaps(self, name=None, show=True, wavelet='cmor1.5-1.0'):
+    def plot_wavelet_coherence_heatmaps(self, name=None, show=True, wavelet='cmor2.5-0.5'):
             """
             Generate wavelet coherence heatmaps for each brain area.
 
