@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+
 
 from .Subject.Subject import Subject
 from .consts import *
@@ -13,8 +15,8 @@ class SharedReality:
     def __init__(self, root, name, has_B_2 = False):
         print(f"Building shared reality for {name}")
         self.date = name
-        self.subject_A_path = root + f"\\{name}_A.snirf"
-        self.subject_B_path = root + f"\\{name}_B.snirf"
+        self.subject_A_path = os.path.join(root, f"{name}_A.snirf")
+        self.subject_B_path = os.path.join(root, f"{name}_B.snirf")
         self.subject_A = Subject.subject_handler(root, name + "_A.snirf",0)
         self.subject_B = Subject.subject_handler(root, name + "_B.snirf", 1,
                                                  file_to_merge=name + "_B_2.snirf" if has_B_2 else None)
@@ -127,7 +129,7 @@ class SharedReality:
 
         return df
 
-    def get_wavelet_coherence_maps(self, path_to_save_maps = None, path_to_candidate_choices = None):
+    def get_wavelet_coherence_maps(self, path_to_save_maps = None, path_to_candidate_choices = None, show_plots = True):
         for i, event in enumerate(EVENTS_TABLE_NAMES):
             if i > 3 and i < 7:
                 continue
@@ -139,7 +141,7 @@ class SharedReality:
             wavelet_coherence = WaveletCoherence(table_A.head(number_of_rows), table_B.head(number_of_rows),
                                                  path_to_save_maps, path_to_candidate_choices)
             name = wavelet_coherence.get_map_name(self.date, event, watch)
-            wavelet_coherence.plot_wavelet_coherence_heatmaps(name)
+            wavelet_coherence.plot_wavelet_coherence_heatmaps(name, show_plots)
             self.wavelet_coherence[name] = wavelet_coherence
 
 

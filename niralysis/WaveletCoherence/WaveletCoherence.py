@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import pywt
 import matplotlib.pyplot as plt
+import os
+import cupy as cp
+import datetime
+
 
 from niralysis.SharedReality.consts import CandidateChoicesAndScoreXlsx
 
@@ -21,7 +25,7 @@ class WaveletCoherence:
         self.candidate_choices = pd.read_excel(path_to_candidate_choices) if path_to_candidate_choices else None
         self.plt = None
         self.sampling_rate = 0.02
-        self.scales = np.arange(600, 1700)
+        self.scales = np.arange(500, 2000)
 
 
 
@@ -85,7 +89,7 @@ class WaveletCoherence:
         plt.ylabel('Brain Areas')
         plt.title('Wavelet Coherence Heat Map')
         if name is not None and self.path_to_save_maps is not None:
-            plt.savefig(f"{self.path_to_save_maps}\\{name}.jpg")
+            plt.savefig(os.path.join(self.path_to_save_maps, f"{name}.jpg"))
         if show:
             plt.show()
 
@@ -163,7 +167,7 @@ class WaveletCoherence:
             n_rows = min(max_maps_per_column, n_areas)
 
             # Create a figure with subplots
-            fig, axes = plt.subplots(n_rows, n_columns, figsize=(50, 5 * n_columns))
+            fig, axes = plt.subplots(n_rows, n_columns, figsize=(50, 7 * n_columns))
             axes = axes.flatten() if n_columns > 1 else [axes]
             for i, area in enumerate(self.subject_A.columns[1:]):
                 print(f"creating {name} {area}, {i} out of {n_areas}")
@@ -173,18 +177,29 @@ class WaveletCoherence:
                     y2 = self.subject_B[area].values
                     if None in y1 or None in y2:
                         continue
+                    scales_gpu = cp.asarray(self.scales)
+                    y1_gpu = cp.array(y1)
+                    y2_gpu = cp.array(y2)
 
                     # Compute wavelet coherence
-                    coeffs_x, freqs_1  = pywt.cwt(y1, self.scales, wavelet=wavelet, sampling_period=0.02)
-                    print(f"done coeffs_x")
-                    coeffs_y, _ = pywt.cwt(y2, self.scales, wavelet=wavelet, sampling_period=0.02)
-                    print(f"done coeffs_y")
+                    print(f"start coeffs", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    coeffs_x_gpu, _ = pywt.cwt(cp.asnumpy(y1_gpu), cp.asnumpy(scales_gpu), wavelet=wavelet, sampling_period=0.02)
+                    print(f"done coeffs_x", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    coeffs_y_gpu, _ = pywt.cwt(cp.asnumpy(y2_gpu), cp.asnumpy(scales_gpu), wavelet=wavelet, sampling_period=0.02)
+                    print(f"done coeffs_y", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-                    coherence = np.abs(coeffs_x * np.conj(coeffs_y))  # 2D coherence matrix
-                    print(f"done coherence")
+
+                    # Convert coeffs to CuPy arrays
+                    coeffs_x_gpu = cp.asarray(coeffs_x_gpu)
+                    coeffs_y_gpu = cp.asarray(coeffs_y_gpu)
+
+                    coherence_gpu = cp.abs(coeffs_x_gpu * cp.conj(coeffs_y_gpu))
+                    coherence = cp.asnumpy(coherence_gpu)
+
+                    print(f"done coherence", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
                     # Plot the coherence heatmap
-                    print(f"plotting {area}")
+                    print(f"plotting {area}", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                     ax = axes[i]
                     im = ax.imshow(coherence, extent=[0, time_points, self.scales[-1], self.scales[0]], aspect='auto', cmap='jet')
                     ax.set_title(f'Wavelet Coherence - {area}')
@@ -203,8 +218,8 @@ class WaveletCoherence:
             self.plt = plt
 
             if name is not None and self.path_to_save_maps is not None:
-                plt.savefig(f"{self.path_to_save_maps}\\{name}.jpg")
-                print(f"saved plot fig for {name}")
+                plt.savefig(os.path.join(self.path_to_save_maps, f"{name}.jpg"))
+                print(f"saved plot fig for {name}", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
             if show:
                 plt.show()
