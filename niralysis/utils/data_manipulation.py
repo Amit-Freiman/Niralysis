@@ -93,3 +93,13 @@ def get_areas_dict(template: str):
     if template == 'L':
         return new_large
     return old_area_dict
+
+def get_data_in_time_range(df: pd.DataFrame, start: int, end: int):
+    return df[(df[TIME_COLUMN] >= start) & (df[TIME_COLUMN] <= end)]
+
+def get_data_frames_with_equal_rows_number(df_a: pd.DataFrame, df_b: pd.DataFrame, limit = 2) -> (pd.DataFrame, pd.DataFrame):
+    if abs(df_a.shape[0] - df_b.shape[0]) > limit:
+        raise ValueError("There is too big of a difference in the data frames' rows number")
+
+    rows = min(df_a.shape[0], df_b.shape[0])
+    return df_a[:rows], df_b[:rows]

@@ -28,10 +28,13 @@ class HbOData:
 
     """
 
-    def __init__(self, path: str, raw_data=None, user_data_frame=None, data_by_area=None):
+    def __init__(self, path: str, raw_data=None, user_data_frame=None, data_by_area=None, file_to_merge=None):
         self.user_data_frame = user_data_frame
         self.all_data_frame = None
         self.raw_data = mne.io.read_raw_snirf(path, preload=True) if path else raw_data
+        if path and file_to_merge is not None:
+            raw_data_2 = mne.io.read_raw_snirf(file_to_merge, preload=True)
+            self.raw_data.add_channels([raw_data_2])
         self.concentrated_data = None
         self.storm_path = None
         self.storm = Storm(path)

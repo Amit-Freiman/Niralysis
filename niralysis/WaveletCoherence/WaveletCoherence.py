@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pywt
 import matplotlib.pyplot as plt
+import os
+
 
 from niralysis.SharedReality.consts import CandidateChoicesAndScoreXlsx
 
@@ -85,7 +87,7 @@ class WaveletCoherence:
         plt.ylabel('Brain Areas')
         plt.title('Wavelet Coherence Heat Map')
         if name is not None and self.path_to_save_maps is not None:
-            plt.savefig(f"{self.path_to_save_maps}\\{name}.jpg")
+            plt.savefig(os.path.join(self.path_to_save_maps, f"{name}.jpg"))
         if show:
             plt.show()
 
@@ -203,7 +205,7 @@ class WaveletCoherence:
             self.plt = plt
 
             if name is not None and self.path_to_save_maps is not None:
-                plt.savefig(f"{self.path_to_save_maps}\\{name}.jpg")
+                plt.savefig(os.path.join(self.path_to_save_maps, f"{name}.jpg"))
                 print(f"saved plot fig for {name}")
 
             if show:

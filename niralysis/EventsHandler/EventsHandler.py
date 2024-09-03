@@ -20,8 +20,11 @@ class EventsHandler:
     """
 
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, file_to_merge=None):
         self.raw_data = mne.io.read_raw_snirf(path, preload=True)
+        if path and file_to_merge is not None:
+            raw_data_2 = mne.io.read_raw_snirf(file_to_merge, preload=True)
+            self.raw_data.add_channels([raw_data_2])
         self.path = path
         self.continuous_events = None
         self.spotted_events = None
@@ -53,7 +56,7 @@ class EventsHandler:
             self.spotted_events = None
         
         if self.path.endswith("A.snirf") or self.path.endswith("A.snirf.gz"):
-            self.raw_data = set_events_from_original_file(self.path, self.path.replace("A", "events_file"))
+            self.raw_data = set_events_from_original_file(self.path, self.path.replace("_A", "_events_file"))
         # If snirf is B file, we need to take the A file and set the events
         if self.path.endswith("B.snirf") or self.path.endswith("B.snirf.gz"):
         # if self.raw_data.annotations.description.size == 0:
