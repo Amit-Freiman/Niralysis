@@ -140,86 +140,78 @@ class WaveletCoherence:
             self.coherence_df.append(np.abs(Sxy) ** 2 / (Sxx * Syy))
 
     def plot_wavelet_coherence_heatmaps(self, name=None, show=True, wavelet='cmor2.5-0.5'):
-            """
-            Generate wavelet coherence heatmaps for each brain area.
+        """
+        Generate wavelet coherence heatmaps for each brain area.
 
-            Parameters:
-            - data1: Pandas DataFrame. First set of brain activity measurements.
-            - data2: Pandas DataFrame. Second set of brain activity measurements.
-            - scales: array_like. Scales to use for the wavelet transform.
-            - wavelet: str. The wavelet to use for the CWT (default is 'cmor').
+        Parameters:
+        - data1: Pandas DataFrame. First set of brain activity measurements.
+        - data2: Pandas DataFrame. Second set of brain activity measurements.
+        - scales: array_like. Scales to use for the wavelet transform.
+        - wavelet: str. The wavelet to use for the CWT (default is 'cmor').
 
-            Returns:
-            - None. The function will display the heatmaps.
-            """
-            print(f"starting plot_wavelet_coherence_heatmaps for {name}")
-            # Ensure that both data frames have the same shape and columns
-            if self.subject_A.shape != self.subject_B.shape or list( self.subject_A.columns) != list( self.subject_B.columns):
-                raise ValueError("The two data tables must have the same shape and column names.")
+        Returns:
+        - None. The function will display the heatmaps.
+        """
+        print(f"starting plot_wavelet_coherence_heatmaps for {name}")
+        # Ensure that both data frames have the same shape and columns
+        if self.subject_A.shape != self.subject_B.shape or list(self.subject_A.columns) != list(self.subject_B.columns):
+            raise ValueError("The two data tables must have the same shape and column names.")
 
-            n_areas = self.subject_A.shape[1] - 1
-            time_points = self.subject_A.shape[0]
+        n_areas = self.subject_A.shape[1] - 1
+        time_points = self.subject_A.shape[0]
 
-            # Create a figure with subplots
-            # Determine the number of rows and columns for the subplots
-            max_maps_per_column = 3
-            n_columns = int(np.ceil(n_areas / max_maps_per_column))
-            n_rows = min(max_maps_per_column, n_areas)
+        # Create a figure with subplots
+        # Determine the number of rows and columns for the subplots
+        max_maps_per_column = 3
+        n_columns = int(np.ceil(n_areas / max_maps_per_column))
+        n_rows = min(max_maps_per_column, n_areas)
 
-            # Create a figure with subplots
-            fig, axes = plt.subplots(n_rows, n_columns, figsize=(50, 7 * n_columns))
-            axes = axes.flatten() if n_columns > 1 else [axes]
-            for i, area in enumerate(self.subject_A.columns[1:]):
-                print(f"creating {name} {area}, {i} out of {n_areas}")
-                # Extract the time series for the current brain area
-                try:
-                    y1 = self.subject_A[area].values
-                    y2 = self.subject_B[area].values
-                    if None in y1 or None in y2:
-                        continue
-                    scales_gpu = cp.asarray(self.scales)
-                    y1_gpu = cp.array(y1)
-                    y2_gpu = cp.array(y2)
+        # Create a figure with subplots
+        fig, axes = plt.subplots(n_rows, n_columns, figsize=(50, 5 * n_columns))
+        axes = axes.flatten() if n_columns > 1 else [axes]
+        for i, area in enumerate(self.subject_A.columns[1:]):
+            print(f"creating {name} {area}, {i} out of {n_areas}")
+            # Extract the time series for the current brain area
+            try:
+                y1 = self.subject_A[area].values
+                y2 = self.subject_B[area].values
+                if None in y1 or None in y2:
+                    continue
 
-                    # Compute wavelet coherence
-                    print(f"start coeffs", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                    coeffs_x_gpu, _ = pywt.cwt(cp.asnumpy(y1_gpu), cp.asnumpy(scales_gpu), wavelet=wavelet, sampling_period=0.02)
-                    print(f"done coeffs_x", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                    coeffs_y_gpu, _ = pywt.cwt(cp.asnumpy(y2_gpu), cp.asnumpy(scales_gpu), wavelet=wavelet, sampling_period=0.02)
-                    print(f"done coeffs_y", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                # Compute wavelet coherence
+                print(f"start coeffs", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                coeffs_x, _ = pywt.cwt(y1, self.scales, wavelet=wavelet, sampling_period=0.02)
+                print(f"done coeffs_x", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                coeffs_y, _ = pywt.cwt(y2, self.scales, wavelet=wavelet, sampling_period=0.02)
+                print(f"done coeffs_y", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
+                coherence = np.abs(coeffs_x * np.conj(coeffs_y))  # 2D coherence matrix
 
-                    # Convert coeffs to CuPy arrays
-                    coeffs_x_gpu = cp.asarray(coeffs_x_gpu)
-                    coeffs_y_gpu = cp.asarray(coeffs_y_gpu)
+                print(f"done coherence", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-                    coherence_gpu = cp.abs(coeffs_x_gpu * cp.conj(coeffs_y_gpu))
-                    coherence = cp.asnumpy(coherence_gpu)
+                # Plot the coherence heatmap
+                print(f"plotting {area}", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                ax = axes[i]
+                im = ax.imshow(coherence, extent=[0, time_points, self.scales[-1], self.scales[0]], aspect='auto',
+                               cmap='jet')
+                ax.set_title(f'Wavelet Coherence - {area}')
+                ax.set_xlabel('Time')
+                ax.set_ylabel('Frequency (Hz)')
+                fig.colorbar(im, ax=ax, orientation='vertical', label='Coherence')
+            except Exception as e:
+                print(f"failed to create heat map for {name} area {area}. Error: {e}")
+                pass
+            # Hide unused subplots
+        for j in range(len(self.subject_A.columns), len(axes)):
+            fig.delaxes(axes[j])
 
-                    print(f"done coherence", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        # Adjust layout to prevent overlap
+        plt.tight_layout()
+        self.plt = plt
 
-                    # Plot the coherence heatmap
-                    print(f"plotting {area}", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                    ax = axes[i]
-                    im = ax.imshow(coherence, extent=[0, time_points, self.scales[-1], self.scales[0]], aspect='auto', cmap='jet')
-                    ax.set_title(f'Wavelet Coherence - {area}')
-                    ax.set_xlabel('Time')
-                    ax.set_ylabel('Frequency (Hz)')
-                    fig.colorbar(im, ax=ax, orientation='vertical', label='Coherence')
-                except Exception as e:
-                    print(f"failed to create heat map for {name} area {area}. Error: {e}")
-                    pass
-                # Hide unused subplots
-            for j in range(len(self.subject_A.columns), len(axes)):
-                fig.delaxes(axes[j])
+        if name is not None and self.path_to_save_maps is not None:
+            plt.savefig(os.path.join(self.path_to_save_maps, f"{name}.jpg"))
+            print(f"saved plot fig for {name}", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-            # Adjust layout to prevent overlap
-            plt.tight_layout()
-            self.plt = plt
-
-            if name is not None and self.path_to_save_maps is not None:
-                plt.savefig(os.path.join(self.path_to_save_maps, f"{name}.jpg"))
-                print(f"saved plot fig for {name}", datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-
-            if show:
-                plt.show()
+        if show:
+            plt.show()
